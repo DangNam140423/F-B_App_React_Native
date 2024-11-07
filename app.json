@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "F_And_B_Pro",
-    "slug": "F_And_B_Pro",
+    "slug": "fandbpro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#25292e"
     },
     "ios": {
       "supportsTablet": true
@@ -22,6 +22,32 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends.",
+          "cameraPermission": "We need access to your camera to let you take photos.",
+          "microphonePermission": "We need access to your microphone for recording audio in videos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow F&B_Pro to access your camera",
+          "microphonePermission": "AllowF&B_Pro to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f556f2d6-017a-47e0-bbfa-e5435deba7ee"
+      }
+    },
+    "owner": "dangnam"
   }
 }

@@ -1,20 +1,462 @@
+import React, { useEffect, useState } from 'react';
+import { View, ImageBackground, Text, Alert, Pressable, Image } from 'react-native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import HomeScreen from './src/components/HomePage/Home/HomeScreen';
+import UserScreen from './src/components/HomePage/User/UserScreen';
+import CustomTabBar from './src/components/HomePage/CustomTabBar/CustomTabBar';
+import MyHeader from './src/components/HomePage/CustomTabBar/CustomHeader';
+import BookingScreen from './src/components/HomePage/Booking/BookingScreen';
+import MenuScreen from './src/components/HomePage/Menu/MenuScreen';
+import { RootBottomParamList, RootDrawParamList, RootStackParamListMain } from './src/navigation/routes';
+import { Provider, useDispatch } from 'react-redux';
+import store, { RootState } from './src/store/store';
+import { useSelector } from 'react-redux';
+import AuthScreen from './src/components/Auth/AuthScreen';
+import LoginScreen from './src/components/Auth/LoginScreen';
+import SignUpScreen from './src/components/Auth/SignUpScreen';
+import * as SecureStore from 'expo-secure-store';
+import { setArrTicket, setAuth, setInfoUser, setRoute, setToken } from './src/store/slices/appSlice';
+import registerNNPushToken from 'native-notify';
+import { registerIndieID, unregisterIndieDevice, getNotificationInbox, registerFollowMasterID, registerFollowerID, postFollowingID, unfollowMasterID, updateFollowersList, getFollowMaster, deleteFollowMaster } from 'native-notify';
+import { REACT_APP_JWT_SECRET, REACT_APP_BACKEND_URL } from '@env';
+import JWT from 'expo-jwt';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import DashBoard from './src/components/DashBoard/DashBoard';
+import Staff from './src/components/DashBoard/Staff/ListStaff';
+import CustomDrawer from './src/components/DashBoard/CustomDrawer/CustomDrawer';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import HeaderDashBoard from './src/components/DashBoard/Header/HeaderDashBoard';
+import SVG_FuFu from './src/store/logo/logo_fufu_svg';
+import StaffManage from './src/components/DashBoard/Staff/StaffManage';
+import ScheduleManage from './src/components/DashBoard/Schedule/ScheduleManage';
+import TicketManage from './src/components/DashBoard/Ticket/TicketManage';
+import axios from 'axios';
+import saveToken from './src/store/token/savetoken';
+import MenuManage from './src/components/DashBoard/Menu/MenuManage';
+import TestNotification from './src/components/DashBoard/Notification/TestNotification';
 
-export default function App() {
+// SplashScreen.preventAutoHideAsync();
+
+const Tab = createBottomTabNavigator<RootBottomParamList>();
+const Stack = createNativeStackNavigator<RootStackParamListMain>();
+const Drawer = createDrawerNavigator<RootDrawParamList>();
+
+const background_App = 'https://res.cloudinary.com/dtjdfh2ly/image/upload/v1727926754/space_7_seceom.jpg';
+const themeUI = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'rgba(0, 0, 0, 0.8)',
+  },
+};
+const themeDashBoard = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#181a20',
+  },
+}
+
+async function save(key: string, value: string) {
+  await SecureStore.setItemAsync(key, value);
+}
+
+
+const MainApp = ({ navigation }: any) => {
+  const dispatch = useDispatch();
+  const roterReux = useSelector((state: RootState) => state.app.route);
+
+  // useEffect(() => {
+  //   //   //   const getaa = async () => {
+  //   //   //     let notifications = await getNotificationInbox(23684, 'Wuaq0f7zMq3lJxql3cEVrq');
+  //   //   //     console.log("unreadCount: ", notifications);
+  //   //   //   }
+  //   //   //   getaa();
+  //   //   Notifications.addNotificationReceivedListener(notification => {
+  //   //     // console.log(notification.request.content.data);
+  //   //     // navigation.navigate('user');
+  //   //     // dispatch(setRoute('user'));
+  //   //   });
+
+  //   //   Notifications.addNotificationResponseReceivedListener(notification => {
+  //   //     navigation.navigate('user');
+  //   //     dispatch(setRoute('user'));
+  //   const subscription = Notifications.addNotificationResponseReceivedListener(notification => {
+  //     console.log("OKKk", notification.notification.request.content.data);
+  //     // Xử lý thông báo ở đây
+  //   });
+
+  //   return () => subscription.remove();
+  // });
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ImageBackground resizeMode='cover' source={{ uri: background_App }} style={{ flex: 1 }}>
+      <StatusBar style={roterReux === 'user' ? 'light' : 'dark'} />
+      <Tab.Navigator
+        initialRouteName={'home'}
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          header: (props) => (
+            <MyHeader {...props} />
+          ),
+        }}
+      >
+        <Tab.Screen
+          name="home"
+          component={HomeScreen}
+          options={{
+            headerShown: false,
+            title: 'Home'
+          }}
+        />
+        <Tab.Screen
+          name="booking"
+          component={BookingScreen}
+          options={{
+            headerShown: false,
+            title: 'Booking'
+          }}
+        />
+        <Tab.Screen
+          name="menu"
+          component={MenuScreen}
+          options={{ title: 'Menu' }}
+        />
+        <Tab.Screen
+          name="user"
+          component={UserScreen}
+          options={{ title: 'User' }}
+        />
+      </Tab.Navigator>
+    </ImageBackground>
+  );
+};
+
+const DashBoardApp = ({ navigation }: any) => {
+  const dispatch = useDispatch();
+  const infoUser = useSelector((state: RootState) => state.app.inforUser);
+  const token = useSelector((state: RootState) => state.app.token);
+  const [numberTicketNew, setNumberTicketNew] = useState<number>(0);
+  const arrTicketRedux = useSelector((state: RootState) => state.app.arrTicket);
+
+
+  const getNumberTicketNew = (arrTicket: any) => {
+    let result = 0;
+    arrTicket.filter((item: any) => {
+      if (item.payToken !== null) {
+        result++;
+      }
+    });
+
+    return result;
+  }
+
+  useEffect(() => {
+    const getTicket = async () => {
+      await axios.post(`http://192.168.1.77:3000/api/get-all-ticket`,
+        {
+          date: null
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(function (response) {
+          if (response.data.errCode === 0) {
+            setNumberTicketNew(getNumberTicketNew(response.data.dataTicket));
+            // dispatch(setArrTicket(response.data.dataTicket));
+          }
+        })
+        .catch(async function (error) {
+          console.log(error);
+          if (error.response && [401, 403].includes(error.response.status)) {
+            await saveToken("token", "");
+            dispatch(setAuth(false));
+          } else {
+            console.log(error);
+          }
+        })
+        .finally(function () {
+        });
+    }
+    getTicket();
+  }, [arrTicketRedux]);
+
+  return (
+    <>
+      {/* <StatusBar style={1 ? 'light' : 'dark'} /> */}
+      <Drawer.Navigator
+        initialRouteName='staff'
+        drawerContent={props => <CustomDrawer {...props} />}
+        screenOptions={{
+          headerShown: true,
+          drawerActiveBackgroundColor: '#d8fff4',
+          drawerActiveTintColor: '#1b7f63',
+          drawerInactiveTintColor: 'white',
+          drawerLabelStyle: { marginLeft: -20 },
+          swipeEnabled: true,
+          header: (props) => (
+            <HeaderDashBoard {...props} />
+          ),
+        }}
+      >
+        <Drawer.Screen name='dashboard'
+          component={DashBoard}
+          options={{
+            title: 'DashBoard',
+            drawerIcon: (
+              ({ color }) => (
+                <MaterialIcons name="dashboard" size={24} color={color} />
+              )
+            )
+          }} />
+        {
+          ['R1', 'R0'].includes(infoUser.roleId) &&
+          <Drawer.Screen name='staff' component={StaffManage}
+            options={{
+              headerShown: false,
+              title: 'Staff',
+              drawerIcon: (
+                ({ color }) => (
+                  <MaterialIcons name="people-alt" size={24} color={color} />
+                )
+              )
+            }} />
+        }
+        <Drawer.Screen name='schedule' component={ScheduleManage}
+          options={{
+            title: 'Schedule',
+            drawerIcon: (
+              ({ color }) => (
+                <MaterialIcons name="calendar-today" size={24} color={color} />
+              )
+            )
+          }} />
+        <Drawer.Screen name='ticket' component={TicketManage}
+          options={{
+            headerShown: false,
+            title: 'Ticket',
+            drawerIcon: (
+              ({ color }) => (
+                <>
+                  <FontAwesome name="ticket" size={24} color={color} />
+                  <View style={{
+                    height: 20,
+                    width: 20,
+                    backgroundColor: numberTicketNew > 0 ? 'red' : 'transparent',
+                    borderRadius: 10,
+                    position: 'absolute',
+                    right: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ color: 'white' }}>
+                      {numberTicketNew > 0 && numberTicketNew}
+                    </Text>
+                  </View>
+                </>
+              )
+            )
+          }} />
+        {
+          ['R1', 'R0'].includes(infoUser.roleId) &&
+          <Drawer.Screen name='menu' component={MenuManage}
+            options={{
+              headerShown: false,
+              title: 'Menu',
+              drawerIcon: (
+                ({ color }) => (
+                  <MaterialIcons name="fastfood" size={24} color={color} />
+                )
+              )
+            }} />
+        }
+        <Drawer.Screen name='notifications' component={TestNotification}
+          options={{
+            title: 'Notifications',
+            drawerIcon: (
+              ({ color }) => (
+                <>
+                  <MaterialIcons name="notifications-active" size={24} color={color} />
+                  {/* <View style={{
+                    height: 20,
+                    width: 20,
+                    backgroundColor: numberTicketNew > 0 ? 'red' : 'transparent',
+                    borderRadius: 10,
+                    position: 'absolute',
+                    right: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ color: 'white' }}>
+                      {numberTicketNew > 0 && numberTicketNew}
+                    </Text>
+                  </View> */}
+                </>
+              )
+            )
+          }} />
+        <Drawer.Screen name='profile' component={Staff}
+          options={{
+            title: 'Profile',
+            drawerIcon: (
+              ({ color }) => (
+                <View style={{ backgroundColor: color, borderRadius: 20, padding: 5 }}>
+                  <SVG_FuFu color={color === 'white' ? 'black' : 'white'} />
+                </View>
+              )
+            )
+          }} />
+      </Drawer.Navigator>
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const Router = () => {
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state: RootState) => state.app.isAuthenticated);
+  const [isLoading, setIsLoading] = useState(true);
+  const infoUser = useSelector((state: RootState) => state.app.inforUser);
+
+  // unregisterIndieDevice('10', 23684, 'Wuaq0f7zMq3lJxql3cEVrq');
+  // useEffect(() => {
+  //   const getNotification = async () => {
+  //     console.log("notifications: ");
+  //     let notifications = await getNotificationInbox(23684, 'Wuaq0f7zMq3lJxql3cEVrq');
+  //     console.log("notifications: ", notifications);
+  //   }
+  //   getNotification();
+  // }, []);
+
+
+  const verifyToken = (token: string) => {
+    let key = REACT_APP_JWT_SECRET;
+    let decoded = null;
+    try {
+      decoded = JWT.decode(token, key);
+      dispatch(setInfoUser({
+        idUser: decoded.id,
+        fullName: decoded.fullName,
+        phoneNumber: decoded.phone,
+        email: decoded.email,
+        roleId: decoded.roleId,
+        image: decoded.image
+      }))
+    } catch (error: any) {
+      if (error.name === 'TokenExpiredError') {
+        console.log('Token has expired');
+      } else {
+        console.log(error);
+      }
+    }
+
+    return decoded;
+  }
+
+  useEffect(() => {
+    async function checkToken() {
+      try {
+        const token = await SecureStore.getItemAsync('token');
+        if (token) {
+          dispatch(setAuth(true));
+          dispatch(setToken(token));
+          verifyToken(token);
+          dispatch(setRoute("home"));
+        } else {
+          dispatch(setAuth(false));
+          dispatch(setToken(""));
+          dispatch(setRoute("home"));
+        }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        dispatch(setAuth(false));
+        dispatch(setToken(""));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkToken();
+  }, [isAuthenticated])
+
+  if (isLoading) {
+    return <Text>Loading</Text>;
+  }
+
+  return (
+    <NavigationContainer theme={infoUser.roleId === 'R3' ? themeUI : themeDashBoard}>
+      <Stack.Navigator
+        initialRouteName={isAuthenticated ? 'main' : 'auth'}
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade_from_bottom'
+        }}
+      >
+        {
+          isAuthenticated && infoUser.roleId === 'R3'
+          &&
+          <Stack.Screen
+            name="main"
+            component={MainApp}
+            options={{ gestureEnabled: false }}
+          />
+        }
+        {
+          isAuthenticated && ['R1', 'R0', 'R2'].includes(infoUser.roleId)
+          &&
+          <Stack.Screen
+            name="main"
+            component={DashBoardApp}
+            options={{ gestureEnabled: false }}
+          />
+        }
+        <Stack.Screen
+          name="auth"
+          component={AuthScreen}
+        />
+        <Stack.Screen
+          name="login"
+          component={LoginScreen}
+        />
+        <Stack.Screen
+          name="signup"
+          component={SignUpScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const App = () => {
+  // const [loaded, error] = useFonts({
+  //   'OpenSans_Regular': require('./assets/fonts/OpenSans-Regular.ttf'),
+  // });
+
+  // useEffect(() => {
+  //   if (loaded || error) {
+  //     SplashScreen.hideAsync();
+  //   }
+  // }, [loaded, error]);
+
+  // if (!loaded && !error) {
+  //   return null;
+  // }
+
+  return (
+    <Provider store={store}>
+      <Router />
+    </Provider>
+  )
+};
+
+export default App;
