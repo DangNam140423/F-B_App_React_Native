@@ -8,6 +8,7 @@ import { RootState } from "../../../store/store";
 import ImageView from "react-native-image-viewing";
 import { useState } from "react";
 import avatarDefault from "../../../store/avatar/avatarUser";
+import axios from "axios";
 
 
 
@@ -17,6 +18,7 @@ async function saveToken(key: string, value: string) {
 
 export default function CustomDrawer(props: any) {
     const dispatch = useDispatch();
+    const pushTokenRedux = useSelector((state: RootState) => state.app.pushToken);
     const infoUser = useSelector((state: RootState) => state.app.inforUser);
 
     const image = [
@@ -39,6 +41,11 @@ export default function CustomDrawer(props: any) {
                 {
                     text: "Logout",
                     onPress: async () => {
+                        await axios.post(`http://192.168.1.84:3000/api/logout`,
+                            {
+                                idUser: infoUser.idUser,
+                                tokenDevice: pushTokenRedux
+                            });
                         await saveToken("token", "");
                         // if (infoUser.roleId === 'R3') {
                         //   await unregisterIndieDevice(infoUser.email, 23684, 'Wuaq0f7zMq3lJxql3cEVrq');
@@ -76,6 +83,7 @@ export default function CustomDrawer(props: any) {
                         imageIndex={0}
                         visible={visible}
                         onRequestClose={() => setIsVisible(false)}
+                        backgroundColor={infoUser.image ? 'black' : 'white'}
                     />
                     <View style={{
                         flexDirection: 'row',
@@ -114,7 +122,11 @@ export default function CustomDrawer(props: any) {
                         justifyContent: 'center',
                         alignItems: 'center'
                     }}>
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{infoUser.roleId === 'R1' ? 'Manager' : 'Staff'}</Text>
+                        <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                            {infoUser.roleId === 'R0' && 'Boss'}
+                            {infoUser.roleId === 'R1' && 'Manager'}
+                            {infoUser.roleId === 'R2' && 'Staff'}
+                        </Text>
                     </View>
                 </View>
                 <DrawerItemList {...props} />

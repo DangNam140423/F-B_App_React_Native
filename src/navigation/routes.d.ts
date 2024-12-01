@@ -2,6 +2,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NavigatorScreenParams } from '@react-navigation/native';
 
 export type RootStackParamListMain = {
+    web: { isAuthenticated: boolean } | undefined;
     main: { isAuthenticated: boolean } | undefined;
     auth: { isAuthenticated: boolean } | undefined;
     login: { isAuthenticated: boolean } | undefined;

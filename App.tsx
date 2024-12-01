@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, ImageBackground, Text, Alert, Pressable, Image } from 'react-native';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, ImageBackground, Text, Platform } from 'react-native';
+import { NavigationContainer, DefaultTheme, createNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -20,7 +20,7 @@ import AuthScreen from './src/components/Auth/AuthScreen';
 import LoginScreen from './src/components/Auth/LoginScreen';
 import SignUpScreen from './src/components/Auth/SignUpScreen';
 import * as SecureStore from 'expo-secure-store';
-import { setArrTicket, setAuth, setInfoUser, setRoute, setToken } from './src/store/slices/appSlice';
+import { setArrTicket, setAuth, setInfoUser, setPushToken, setRoute, setToken } from './src/store/slices/appSlice';
 import registerNNPushToken from 'native-notify';
 import { registerIndieID, unregisterIndieDevice, getNotificationInbox, registerFollowMasterID, registerFollowerID, postFollowingID, unfollowMasterID, updateFollowersList, getFollowMaster, deleteFollowMaster } from 'native-notify';
 import { REACT_APP_JWT_SECRET, REACT_APP_BACKEND_URL } from '@env';
@@ -40,7 +40,10 @@ import TicketManage from './src/components/DashBoard/Ticket/TicketManage';
 import axios from 'axios';
 import saveToken from './src/store/token/savetoken';
 import MenuManage from './src/components/DashBoard/Menu/MenuManage';
-import TestNotification from './src/components/DashBoard/Notification/TestNotification';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import ListNotification from './src/components/DashBoard/Notification/ListNotification';
+import Profile from './src/components/DashBoard/Profile/Profile';
 
 // SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +59,7 @@ const themeUI = {
     background: 'rgba(0, 0, 0, 0.8)',
   },
 };
+
 const themeDashBoard = {
   ...DefaultTheme,
   colors: {
@@ -64,10 +68,59 @@ const themeDashBoard = {
   },
 }
 
-async function save(key: string, value: string) {
-  await SecureStore.setItemAsync(key, value);
-}
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: true,
+  }),
+});
 
+const navigationRef = createNavigationContainerRef<RootDrawParamList>();
+
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    try {
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      if (!projectId) {
+        throw new Error('Project ID not found');
+      }
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+    } catch (e) {
+      token = `${e}`;
+    }
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+  return token;
+}
 
 const MainApp = ({ navigation }: any) => {
   const dispatch = useDispatch();
@@ -98,7 +151,7 @@ const MainApp = ({ navigation }: any) => {
 
   return (
     <ImageBackground resizeMode='cover' source={{ uri: background_App }} style={{ flex: 1 }}>
-      <StatusBar style={roterReux === 'user' ? 'light' : 'dark'} />
+      {/* <StatusBar style={roterReux === 'user' ? 'light' : 'dark'} /> */}
       <Tab.Navigator
         initialRouteName={'home'}
         tabBar={(props) => <CustomTabBar {...props} />}
@@ -142,10 +195,16 @@ const MainApp = ({ navigation }: any) => {
 
 const DashBoardApp = ({ navigation }: any) => {
   const dispatch = useDispatch();
-  const infoUser = useSelector((state: RootState) => state.app.inforUser);
+  const inforUser = useSelector((state: RootState) => state.app.inforUser);
   const token = useSelector((state: RootState) => state.app.token);
   const [numberTicketNew, setNumberTicketNew] = useState<number>(0);
   const arrTicketRedux = useSelector((state: RootState) => state.app.arrTicket);
+  const [numberNotification, setNumberNotification] = useState<number>(0);
+  const arrNotificationRedux = useSelector((state: RootState) => state.app.arrNotification);
+
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<Notifications.EventSubscription>();
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
 
 
   const getNumberTicketNew = (arrTicket: any) => {
@@ -159,44 +218,115 @@ const DashBoardApp = ({ navigation }: any) => {
     return result;
   }
 
-  useEffect(() => {
-    const getTicket = async () => {
-      await axios.post(`http://192.168.1.77:3000/api/get-all-ticket`,
-        {
-          date: null
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(function (response) {
-          if (response.data.errCode === 0) {
-            setNumberTicketNew(getNumberTicketNew(response.data.dataTicket));
-            // dispatch(setArrTicket(response.data.dataTicket));
-          }
-        })
-        .catch(async function (error) {
+  const getNumberNotification = (arrNotification: any) => {
+    let result = 0;
+    arrNotification.filter((item: any) => {
+      if (!item.isRead) {
+        result++;
+      }
+    });
+
+    return result;
+  }
+
+  const getTicket = async () => {
+    await axios.post(`http://192.168.1.84:3000/api/get-all-ticket`,
+      {
+        date: null
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(function (response) {
+        if (response.data.errCode === 0) {
+          setNumberTicketNew(getNumberTicketNew(response.data.dataTicket));
+          // dispatch(setArrTicket(response.data.dataTicket));
+        }
+      })
+      .catch(async function (error) {
+        console.log(error);
+        if (error.response && [401, 403].includes(error.response.status)) {
+          await saveToken("token", "");
+          dispatch(setAuth(false));
+        } else {
           console.log(error);
-          if (error.response && [401, 403].includes(error.response.status)) {
-            await saveToken("token", "");
-            dispatch(setAuth(false));
-          } else {
-            console.log(error);
-          }
-        })
-        .finally(function () {
-        });
-    }
+        }
+      })
+      .finally(function () {
+      });
+  }
+
+  const getAllNotification = async () => {
+    await axios.post(`http://192.168.1.84:3000/api/get-notification`,
+      {
+        userId: inforUser.idUser
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(function (response) {
+        if (response.data.errCode === 0) {
+          setNumberNotification(getNumberNotification(response.data.arrNotifi));
+        } else {
+          alert(response.data.errMessage);
+        }
+      })
+      .catch(async function (error) {
+        if (error.response && [401, 403].includes(error.response.status)) {
+          await saveToken("token", "");
+          dispatch(setAuth(false));
+        } else {
+          console.log(error);
+        }
+      })
+      .finally(function () {
+      });
+  }
+
+  useEffect(() => {
     getTicket();
   }, [arrTicketRedux]);
+
+  useEffect(() => {
+    getAllNotification();
+  }, [arrNotificationRedux]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
+    }
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      getTicket();
+      getAllNotification();
+      // console.log(notification.request.content.badge);
+      // Notifications.setBadgeCountAsync(0);
+
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      // console.log("clickkk: ", response.notification.request.content?.data.bill);
+      // if (navigationRef.isReady()) {
+      //   navigationRef.navigate('notifications');
+      // } else {
+      //   console.log("No");
+      // }
+      navigation.navigate('notifications', {
+        isReload: true
+      });
+    });
+  }, []);
 
   return (
     <>
       {/* <StatusBar style={1 ? 'light' : 'dark'} /> */}
       <Drawer.Navigator
-        initialRouteName='staff'
+        initialRouteName='dashboard'
         drawerContent={props => <CustomDrawer {...props} />}
         screenOptions={{
           headerShown: true,
@@ -221,7 +351,7 @@ const DashBoardApp = ({ navigation }: any) => {
             )
           }} />
         {
-          ['R1', 'R0'].includes(infoUser.roleId) &&
+          ['R1', 'R0'].includes(inforUser.roleId) &&
           <Drawer.Screen name='staff' component={StaffManage}
             options={{
               headerShown: false,
@@ -269,7 +399,7 @@ const DashBoardApp = ({ navigation }: any) => {
             )
           }} />
         {
-          ['R1', 'R0'].includes(infoUser.roleId) &&
+          ['R1', 'R0'].includes(inforUser.roleId) &&
           <Drawer.Screen name='menu' component={MenuManage}
             options={{
               headerShown: false,
@@ -281,17 +411,17 @@ const DashBoardApp = ({ navigation }: any) => {
               )
             }} />
         }
-        <Drawer.Screen name='notifications' component={TestNotification}
+        <Drawer.Screen name='notifications' component={ListNotification}
           options={{
             title: 'Notifications',
             drawerIcon: (
               ({ color }) => (
                 <>
                   <MaterialIcons name="notifications-active" size={24} color={color} />
-                  {/* <View style={{
+                  <View style={{
                     height: 20,
                     width: 20,
-                    backgroundColor: numberTicketNew > 0 ? 'red' : 'transparent',
+                    backgroundColor: numberNotification > 0 ? 'red' : 'transparent',
                     borderRadius: 10,
                     position: 'absolute',
                     right: 10,
@@ -299,14 +429,14 @@ const DashBoardApp = ({ navigation }: any) => {
                     alignItems: 'center'
                   }}>
                     <Text style={{ color: 'white' }}>
-                      {numberTicketNew > 0 && numberTicketNew}
+                      {numberNotification > 0 && numberNotification}
                     </Text>
-                  </View> */}
+                  </View>
                 </>
               )
             )
           }} />
-        <Drawer.Screen name='profile' component={Staff}
+        <Drawer.Screen name='profile' component={Profile}
           options={{
             title: 'Profile',
             drawerIcon: (
@@ -326,7 +456,7 @@ const Router = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state: RootState) => state.app.isAuthenticated);
   const [isLoading, setIsLoading] = useState(true);
-  const infoUser = useSelector((state: RootState) => state.app.inforUser);
+  const inforUser = useSelector((state: RootState) => state.app.inforUser);
 
   // unregisterIndieDevice('10', 23684, 'Wuaq0f7zMq3lJxql3cEVrq');
   // useEffect(() => {
@@ -344,6 +474,11 @@ const Router = () => {
     let decoded = null;
     try {
       decoded = JWT.decode(token, key);
+      // const currentTime = Math.floor(Date.now() / 1000);
+      // if (decoded.iat && Math.abs(currentTime - decoded.iat) > 5) {
+      //   console.warn("Token iat không hợp lệ do chênh lệch thời gian");
+      // }
+
       dispatch(setInfoUser({
         idUser: decoded.id,
         fullName: decoded.fullName,
@@ -353,11 +488,7 @@ const Router = () => {
         image: decoded.image
       }))
     } catch (error: any) {
-      if (error.name === 'TokenExpiredError') {
-        console.log('Token has expired');
-      } else {
-        console.log(error);
-      }
+      console.log(error);
     }
 
     return decoded;
@@ -389,12 +520,16 @@ const Router = () => {
     checkToken();
   }, [isAuthenticated])
 
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => token && dispatch(setPushToken(token)));
+  }, []);
+
   if (isLoading) {
     return <Text>Loading</Text>;
   }
 
   return (
-    <NavigationContainer theme={infoUser.roleId === 'R3' ? themeUI : themeDashBoard}>
+    <NavigationContainer theme={inforUser.roleId === 'R3' ? themeUI : themeDashBoard}>
       <Stack.Navigator
         initialRouteName={isAuthenticated ? 'main' : 'auth'}
         screenOptions={{
@@ -403,7 +538,7 @@ const Router = () => {
         }}
       >
         {
-          isAuthenticated && infoUser.roleId === 'R3'
+          isAuthenticated && inforUser.roleId === 'R3'
           &&
           <Stack.Screen
             name="main"
@@ -412,7 +547,7 @@ const Router = () => {
           />
         }
         {
-          isAuthenticated && ['R1', 'R0', 'R2'].includes(infoUser.roleId)
+          isAuthenticated && ['R1', 'R0', 'R2'].includes(inforUser.roleId)
           &&
           <Stack.Screen
             name="main"

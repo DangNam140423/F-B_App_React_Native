@@ -63,7 +63,7 @@ const StaffSchedule = () => {
 
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.77:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -161,6 +161,7 @@ const StaffSchedule = () => {
                         }}>
                         <ListFreeStaff date={date} timeType={timeType} closeModal={closeModal} getDataWorkSchedule={getDataWorkSchedule}
                         />
+                        {/* <ListStaffShift date={date} timeType={timeType} closeModal={closeModal} getDataWorkSchedule={getDataWorkSchedule} /> */}
                     </Modal>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={{

@@ -24,6 +24,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import { LinearGradient } from 'expo-linear-gradient';
 import ImageFuFu from './ImageFuFu';
 import DetailTicketScreen from '../Ticket/DetailTicketScreen';
+import { StatusBar } from 'expo-status-bar';
+import NewTicketScreen from './NewTicketScreen';
 
 const SubStack = createStackNavigator();
 const { width, height } = Dimensions.get('window');
@@ -139,11 +141,13 @@ const BookingScreen = ({ navigation }: any) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [valueTicket, setValueTicket] = useState<Ticket>();
 
+    const pickerRef = useRef<any>(null);
 
     const buildArraySchedule = (arrSchedule: [objectSchedule]) => {
         const filter = arrSchedule.map((item) => ({
             value: item.timeType,
-            label: item.allCodeData.valueEn
+            label: item.allCodeData.valueEn,
+            color: 'black'
         }));
 
         return filter;
@@ -172,7 +176,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.77:3000/api/user/get-schedule2`,
+            await axios.post(`http://192.168.1.84:3000/api/user/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -270,7 +274,7 @@ const BookingScreen = ({ navigation }: any) => {
     }
 
     const getArrTable = async () => {
-        await axios.post(`http://192.168.1.77:3000/api/user/get-table-empty`,
+        await axios.post(`http://192.168.1.84:3000/api/user/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -376,6 +380,7 @@ const BookingScreen = ({ navigation }: any) => {
         }
     }, [arrTable]);
 
+
     const handleBooking = async () => {
         setLoadingBooking(true);
         const arrTableChoose: number[] = [];
@@ -385,11 +390,11 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.77:3000/api/user/create-ticket`,
+            await axios.post(`http://192.168.1.84:3000/api/user/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
-                    phoneCustomer: "0963872727",
+                    phoneCustomer: infoUser.phoneNumber,
                     nameCustomer: infoUser.fullName,
                     email: infoUser.email,
                     numberTicketType: {
@@ -445,14 +450,14 @@ const BookingScreen = ({ navigation }: any) => {
         <SafeAreaProvider style={styles.container}>
             <SafeAreaView style={styles.safeAre}>
                 <Modal
-                    animationType="slide"
+                    animationType="fade"
                     transparent={true}
                     visible={modalVisible}
                     onRequestClose={() => {
                         Alert.alert('Modal has been closed.');
                         setModalVisible(!modalVisible);
                     }}>
-                    <DetailTicketScreen closeModal={closeModal} valueTicket={valueTicket as Ticket} />
+                    <NewTicketScreen closeModal={closeModal} valueTicket={valueTicket as Ticket} />
                 </Modal>
                 <MyHeader title={'Booking'} />
                 <View style={styles.body}>
@@ -527,11 +532,15 @@ const BookingScreen = ({ navigation }: any) => {
                                             <View style={styles.iconInput}>
                                                 <AntDesign name="clockcircleo" size={30} color="white" />
                                             </View>
-                                            <View style={styles.valueInput}>
+                                            <Pressable
+                                                style={styles.valueInput}
+                                                onPress={() => pickerRef.current.togglePicker()}
+                                            >
                                                 {!loadingSchedule
                                                     ?
                                                     <RNPickerSelect
                                                         value={timeType}
+                                                        ref={pickerRef}
                                                         onValueChange={(itemValue) => setTimeType(itemValue)}
                                                         style={pickerSelectStyles}
                                                         placeholder={{
@@ -545,7 +554,7 @@ const BookingScreen = ({ navigation }: any) => {
                                                     />
                                                     :
                                                     <Text style={{ color: 'grey', fontSize: 17 }}>Loading...</Text>}
-                                            </View>
+                                            </Pressable>
                                         </View>
                                         <View style={styles.input}>
                                             <Pressable onPress={() => handleNumberChange('minu', 'adult')}>
@@ -822,7 +831,7 @@ const BookingScreen = ({ navigation }: any) => {
                             </View>
                             <View>
                                 <Text style={{ color: 'grey', fontWeight: '500' }}>Cost</Text>
-                                <Text style={{ fontWeight: '500', fontSize: 17 }}>{formatCurrency(numberAdult * 200000 + numberKid * 150000)}</Text>
+                                <Text style={{ fontWeight: '500', fontSize: 17 }}>{formatCurrency(numberAdult * 169000 + numberKid * 119000)}</Text>
                             </View>
                         </View>
 
@@ -899,11 +908,13 @@ const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         color: 'white',
         fontSize: 17,
-        height: '100%'
+        height: '100%',
+        position: 'absolute',
+        right: 0
     },
     inputAndroid: {
         color: 'white',
-        fontSize: 17,
+        fontSize: 17
     },
 });
 
@@ -940,10 +951,10 @@ const styles = StyleSheet.create({
         height: 60,
         borderRadius: 10,
         paddingHorizontal: 10,
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         flex: 1,
-        alignItems: 'center',
-        flexDirection: 'row'
+        alignItems: 'flex-end',
+        position: 'relative'
     },
     iconInput: {
         position: 'absolute',

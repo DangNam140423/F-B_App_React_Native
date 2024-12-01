@@ -19,6 +19,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import RNPickerSelect from 'react-native-picker-select';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 const SubStack = createStackNavigator();
 const { width, height } = Dimensions.get('window');
@@ -88,12 +89,14 @@ const BookingScreen = ({ navigation }: any) => {
     const [loadingTable, setLoadingTable] = useState(false);
     const [loadingSchedule, setLoadingSchedule] = useState(false);
 
+    const pickerRef = useRef<any>(null);
 
 
     const buildArraySchedule = (arrSchedule: [objectSchedule]) => {
         const filter = arrSchedule.map((item) => ({
             value: item.timeType,
-            label: item.allCodeData.valueEn
+            label: item.allCodeData.valueEn,
+            color: 'black'
         }));
 
         return filter;
@@ -120,7 +123,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.77:3000/api/get-schedule2`,
+            await axios.post(`http://192.168.1.84:3000/api/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -153,7 +156,7 @@ const BookingScreen = ({ navigation }: any) => {
 
     const getArrTable = async () => {
         setLoadingTable(true);
-        await axios.post(`http://192.168.1.77:3000/api/get-table-empty`,
+        await axios.post(`http://192.168.1.84:3000/api/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -343,7 +346,7 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.77:3000/api/create-ticket`,
+            await axios.post(`http://192.168.1.84:3000/api/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
@@ -446,10 +449,13 @@ const BookingScreen = ({ navigation }: any) => {
                                     <View style={styles.iconInput}>
                                         <AntDesign name="clockcircleo" size={30} color="white" />
                                     </View>
-                                    <View style={styles.valueInput}>
+                                    <Pressable
+                                        onPress={() => pickerRef.current.togglePicker()}
+                                        style={styles.valueInput}>
                                         {!loadingSchedule
                                             ?
                                             <RNPickerSelect
+                                                ref={pickerRef}
                                                 value={timeType}
                                                 onValueChange={(itemValue) => setTimeType(itemValue)}
                                                 style={pickerSelectStyles}
@@ -459,12 +465,11 @@ const BookingScreen = ({ navigation }: any) => {
                                                     color: 'gray',
                                                 }}
                                                 useNativeAndroidPickerStyle={false}
-                                                // activeItemStyle={Platform.OS === 'android' ? styles.picker : Platform.OS === 'ios' && styles.pickerIOS}
                                                 items={arrSchedule.length > 0 ? arrSchedule : []}
                                             />
                                             :
                                             <Text style={{ color: 'grey', fontSize: 17 }}>Loading...</Text>}
-                                    </View>
+                                    </Pressable>
                                 </View>
                                 <View style={styles.input}>
                                     <Pressable onPress={() => handleNumberChange('minu', 'adult')}>
@@ -700,11 +705,13 @@ const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         color: 'white',
         fontSize: 17,
-        height: '100%'
+        height: '100%',
+        position: 'absolute',
+        right: 0
     },
     inputAndroid: {
         color: 'white',
-        fontSize: 17,
+        fontSize: 17
     },
 });
 
@@ -745,13 +752,13 @@ const styles = StyleSheet.create({
     },
     valueInput: {
         backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        height: 60,
+        height: '100%',
         borderRadius: 10,
         paddingHorizontal: 10,
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
+        alignItems: 'flex-end',
         flex: 1,
-        alignItems: 'center',
-        flexDirection: 'row'
+        position: 'relative'
     },
     iconInput: {
         position: 'absolute',

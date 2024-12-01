@@ -5,63 +5,41 @@ import * as SecureStore from 'expo-secure-store';
 import Feather from '@expo/vector-icons/Feather';
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { setAuth, setInfoUser, setToken } from "../../store/slices/appSlice";
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import { setAuth, setInfoUser, setPushToken, setToken } from "../../store/slices/appSlice";
 import { REACT_APP_BACKEND_URL } from '@env';
 import { registerIndieID } from "native-notify";
+import * as Application from 'expo-application';
+import { RootState } from "../../store/store";
+import saveToken from "../../store/token/savetoken";
 
 
-const { width, height } = Dimensions.get('window');
 const background_App = 'https://i.pinimg.com/originals/ef/2c/59/ef2c59764c7f3f59e53e0ba0129c7f87.jpg';
-
-
-// async function registerForPushNotificationsAsync() {
-//     let token;
-
-//     if (Device.isDevice) {
-//         const { status: existingStatus } = await Notifications.getPermissionsAsync();
-//         let finalStatus = existingStatus;
-
-//         if (existingStatus !== 'granted') {
-//             const { status } = await Notifications.requestPermissionsAsync();
-//             finalStatus = status;
-//         }
-
-//         if (finalStatus !== 'granted') {
-//             alert('Failed to get push token for push notification!');
-//             return;
-//         }
-
-//         // Thiết lập kênh thông báo cho Android
-//         if (Platform.OS === 'android') {
-//             await Notifications.setNotificationChannelAsync('default', {
-//                 name: 'default',
-//                 importance: Notifications.AndroidImportance.MAX,
-//                 vibrationPattern: [0, 250, 250, 250],
-//                 lightColor: '#FF231F7C',
-//             });
-//         }
-
-//         token = (await Notifications.getExpoPushTokenAsync()).data;
-//         // console.log(token);
-//         return token;
-//     } else {
-//         alert('Must use physical device for Push Notifications');
-//     }
-
-//     return null;
-// }
-
 
 export default function LoginScreen({ navigation }: any) {
     const dispatch = useDispatch();
+    const pushTokenRedux = useSelector((state: RootState) => state.app.pushToken);
     const [textEmail, setTextEmail] = useState<string>("");
     const [textPassword, setTextPassword] = useState<string>("");
     const [hiddenPass, setHiddenPass] = useState(true);
     const emailRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
     const [loadding, setLoading] = useState(false);
+    const [idDevice, setIdDevice] = useState<string | null | undefined>('');
+
+    // async function getDeviceId() {
+    //     let deviceId;
+
+    //     if (Platform.OS === 'android') {
+    //         deviceId = await Application.getAndroidId(); // Lấy ID cho Android
+    //     } else if (Platform.OS === 'ios') {
+    //         deviceId = await Application.getIosIdForVendorAsync(); // Lấy ID cho iOS
+    //     }
+
+    //     return deviceId;
+    // }
+
+    // getDeviceId().then((id) => setIdDevice(id));
+    // console.log(idDevice);
 
     // useEffect(() => {
     //     registerForPushNotificationsAsync().then(token => {
@@ -110,18 +88,19 @@ export default function LoginScreen({ navigation }: any) {
         }
     }
 
-    async function saveToken(key: string, value: string) {
-        await SecureStore.setItemAsync(key, value);
-        await checkToken();
-    }
+    // async function saveToken(key: string, value: string) {
+    //     await SecureStore.setItemAsync(key, value);
+    //     await checkToken();
+    // }
 
     const handleLogin = () => {
         Keyboard.dismiss();
         setLoading(true);
-        axios.post(`http://192.168.1.77:3000/api/login`,
+        axios.post(`http://192.168.1.84:3000/api/login`,
             {
                 email: textEmail,
-                password: textPassword
+                password: textPassword,
+                tokenDevice: pushTokenRedux
             })
             .then(async function (response) {
                 if (response.data.errCode !== 0) {
@@ -129,8 +108,9 @@ export default function LoginScreen({ navigation }: any) {
                 } else {
                     const infoUser = response.data.user;
                     await saveToken("token", response.data.jwtData);
-                    dispatch(setAuth(true));
-                    dispatch(setInfoUser({
+                    await dispatch(setAuth(true));
+                    await dispatch(setToken(response.data.jwtData));
+                    await dispatch(setInfoUser({
                         idUser: infoUser.id,
                         fullName: infoUser.fullName,
                         email: infoUser.email,
@@ -138,6 +118,7 @@ export default function LoginScreen({ navigation }: any) {
                         roleId: infoUser.roleId,
                         image: infoUser.image
                     }))
+                    // Sau khi đăng nhập thành công, cần lưu tokenDevice vào bảng tokenDevice
 
                     // if (['R0', 'R1', 'R2'].includes(infoUser.roleId)) {
                     //     await registerIndieID('R0', 23684, 'Wuaq0f7zMq3lJxql3cEVrq');

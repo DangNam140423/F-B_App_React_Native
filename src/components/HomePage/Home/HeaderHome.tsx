@@ -5,6 +5,7 @@ import { NavigationProp } from "../../../navigation/routes";
 import { useDispatch, useSelector } from 'react-redux';
 import { setRoute } from '../../../store/slices/appSlice';
 import { RootState } from "../../../store/store";
+import avatarDefault from "../../../store/avatar/avatarUser";
 
 
 const { width, height } = Dimensions.get('window');
@@ -29,7 +30,7 @@ export default function HeaderHome() {
                 <Pressable style={styles.borderAvatar} onPress={moveProfileScreen}>
                     <Image
                         style={styles.avatar}
-                        source={{ uri: 'https://i.pinimg.com/originals/dd/45/59/dd45590a07fc4273232b682ff445a93e.jpg' }}
+                        source={{ uri: inforUser.image ? inforUser.image : avatarDefault }}
                     />
                 </Pressable>
             </View>

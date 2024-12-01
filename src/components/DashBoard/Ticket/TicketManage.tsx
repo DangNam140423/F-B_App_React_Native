@@ -4,12 +4,19 @@ import SubHeaderDashBoard from "../Header/SubHeaderDashBoard2";
 import ListTicket from "./ListTicket";
 import CreateTicket from "./CreateTicket";
 import ScannerTicket from "./ScannerTicket";
+import { useEffect } from "react";
 
 
 const Stack = createNativeStackNavigator();
 
 
-export default function TicketManage() {
+export default function TicketManage({ navigation, route }: any) {
+    const parameter = route.params && route.params ? route.params : undefined;
+
+    useEffect(() => {
+        navigation.navigate('listticket', parameter);
+    }, [parameter])
+
     return (
         <Stack.Navigator
             initialRouteName={'listticket'}

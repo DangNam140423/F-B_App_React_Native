@@ -16,11 +16,13 @@ export default function ScannerTicket({ navigation }: any) {
 
     const handleBarCodeScanned = ({ type, data }: any) => {
         setScanned(true);
-        if (data) {
+        if (data && Number.isInteger(Number(data))) {
             navigation.navigate('listticket', {
                 getTicket: true,
-                idTicket: data
+                idTicket: Number(data)
             });
+        } else {
+            alert("Invalid code");
         }
         // Alert.alert(
         //     "Confirm",
@@ -29,7 +31,7 @@ export default function ScannerTicket({ navigation }: any) {
         //         {
         //             text: "Activate",
         //             onPress: () => {
-        //                 axios.put(`http://192.168.1.77:3000/api/update-ticket`,
+        //                 axios.put(`http://192.168.1.84:3000/api/update-ticket`,
         //                     {
         //                         dataTicket: { id: data }
         //                     },

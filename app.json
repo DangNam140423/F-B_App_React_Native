@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -41,7 +42,8 @@
           "microphonePermission": "AllowF&B_Pro to access your microphone",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {

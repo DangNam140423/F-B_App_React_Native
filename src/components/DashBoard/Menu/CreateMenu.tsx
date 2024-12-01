@@ -65,7 +65,7 @@ export default function CreateMenu({ navigation }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.77:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -173,7 +173,7 @@ export default function CreateMenu({ navigation }: any) {
     const upload = async (dataUpload: any) => {
         setLoading(true);
         Keyboard.dismiss();
-        await axios.post(`http://192.168.1.77:3000/api/create-new-dish`,
+        await axios.post(`http://192.168.1.84:3000/api/create-new-dish`,
             dataUpload,
             {
                 headers: {

@@ -70,7 +70,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.77:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -95,7 +95,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         const getMenu = async () => {
-            await axios.get(`http://192.168.1.77:3000/api/user/get-all-menu?category=ALL`, {
+            await axios.get(`http://192.168.1.84:3000/api/user/get-all-menu?category=ALL`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`

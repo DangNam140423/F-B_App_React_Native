@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, RefreshControl } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, RefreshControl, Platform } from 'react-native';
 import axios from 'axios';
 import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
@@ -75,6 +75,7 @@ export default function DashBoard({ navigation }: any) {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isShowLabel, setIsShowLabel] = useState(false);
     const [filterChart, setFilterChart] = useState('year');
+    const pickerRef = useRef<any>(null);
     const [dataChart, setDataChart] = useState<dataChartObject[]>([
         { x: "Jan", y: 0 },
         { x: "Feb", y: 0 },
@@ -120,7 +121,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataChart = async () => {
-        await axios.get(`http://192.168.1.77:3000/api/get-data-chart`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-data-chart`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -147,7 +148,7 @@ export default function DashBoard({ navigation }: any) {
 
 
     const getDataHome = async () => {
-        await axios.get(`http://192.168.1.77:3000/api/get-data-home`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-data-home`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -188,7 +189,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.77:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -231,6 +232,7 @@ export default function DashBoard({ navigation }: any) {
                         keyExtractor={(item, index) => index.toString()} // Ensure each item has a unique key
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
+                        style={{ height: 'auto' }}
                         refreshControl={
                             <RefreshControl
                                 colors={['black']}
@@ -316,9 +318,12 @@ export default function DashBoard({ navigation }: any) {
                                             fontWeight: '500'
                                         }}>Revenue Chart</Text>
 
-                                        <View style={{ gap: 10, flexDirection: 'row', alignItems: 'center' }}>
-                                            <FontAwesome5 name="chevron-down" size={15} color="grey" />
+                                        <Pressable
+                                            onPress={() => pickerRef.current.togglePicker()}
+                                            style={{ gap: 10, flexDirection: 'row', alignItems: 'center' }}>
+                                            <FontAwesome5 name="chevron-down" size={20} color="grey" />
                                             <RNPickerSelect
+                                                ref={pickerRef}
                                                 onValueChange={(value) => setFilterChart(value)}
                                                 value={filterChart}
                                                 placeholder={{
@@ -333,7 +338,7 @@ export default function DashBoard({ navigation }: any) {
                                                     { label: 'Month', value: 'month' }
                                                 ]}
                                             />
-                                        </View>
+                                        </Pressable>
                                     </View>
                                     <View style={{ width: '100%', justifyContent: 'space-between', flexDirection: 'row' }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -356,16 +361,20 @@ export default function DashBoard({ navigation }: any) {
                                                 expenditure
                                             </Text>
                                         </View>
-                                        <Text style={{
-                                            color: 'white',
-                                            fontSize: 15,
-                                            fontWeight: '400'
-                                        }}>{new Date().getFullYear()}</Text>
+                                        <Pressable
+                                            onPress={() => pickerRef.current.togglePicker()}
+                                        >
+                                            <Text style={{
+                                                color: 'white',
+                                                fontSize: 17,
+                                                fontWeight: '400'
+                                            }}>{new Date().getFullYear()}</Text>
+                                        </Pressable>
                                     </View>
-                                    <View style={{ marginTop: 15, alignItems: 'flex-end', width: '100%' }}>
+                                    <View style={{ marginTop: 20, alignItems: 'flex-start', width: '100%' }}>
                                         <Text style={{
                                             color: '#1b7f63',
-                                            fontSize: 15,
+                                            fontSize: 17,
                                             fontWeight: '500'
                                         }}>
                                             VND
@@ -384,7 +393,7 @@ export default function DashBoard({ navigation }: any) {
                                             y: 0
                                         }}
                                         animate={{
-                                            duration: 1000,
+                                            duration: 500,
                                         }}
                                         padding={
                                             { left: 70, right: 30, top: 30, bottom: 30 }
@@ -506,8 +515,12 @@ export default function DashBoard({ navigation }: any) {
                                                                 workschedule.userData.map((staff, index) => {
                                                                     return (
                                                                         <View style={styles.itemStaff} key={index}>
-                                                                            <Image style={styles.imageStaff} source={{ uri: staff.image ? staff.image : avatarDefault }} />
-                                                                            <Text style={styles.nameStaff}>{staff.fullName}</Text>
+                                                                            <Image style={[styles.imageStaff, {
+                                                                                borderWidth: staff.email === infoUser.email ? 2 : 0
+                                                                            }]} source={{ uri: staff.image ? staff.image : avatarDefault }} />
+                                                                            <Text style={[styles.nameStaff, {
+                                                                                color: staff.email === infoUser.email ? '#1b7f63' : 'black'
+                                                                            }]}>{staff.fullName}</Text>
                                                                         </View>
                                                                     )
                                                                 })
@@ -533,8 +546,12 @@ export default function DashBoard({ navigation }: any) {
                                                                 workschedule.userData.map((staff, index) => {
                                                                     return (
                                                                         <View style={styles.itemStaff} key={index}>
-                                                                            <Image style={styles.imageStaff} source={{ uri: staff.image ? staff.image : avatarDefault }} />
-                                                                            <Text style={styles.nameStaff}>{staff.fullName}</Text>
+                                                                            <Image style={[styles.imageStaff, {
+                                                                                borderWidth: staff.email === infoUser.email ? 2 : 0
+                                                                            }]} source={{ uri: staff.image ? staff.image : avatarDefault }} />
+                                                                            <Text style={[styles.nameStaff, {
+                                                                                color: staff.email === infoUser.email ? '#1b7f63' : 'black'
+                                                                            }]}>{staff.fullName}</Text>
                                                                         </View>
                                                                     )
                                                                 })
@@ -560,8 +577,12 @@ export default function DashBoard({ navigation }: any) {
                                                                 workschedule.userData.map((staff, index) => {
                                                                     return (
                                                                         <View style={styles.itemStaff} key={index}>
-                                                                            <Image style={styles.imageStaff} source={{ uri: staff.image ? staff.image : avatarDefault }} />
-                                                                            <Text style={styles.nameStaff}>{staff.fullName}</Text>
+                                                                            <Image style={[styles.imageStaff, {
+                                                                                borderWidth: staff.email === infoUser.email ? 2 : 0
+                                                                            }]} source={{ uri: staff.image ? staff.image : avatarDefault }} />
+                                                                            <Text style={[styles.nameStaff, {
+                                                                                color: staff.email === infoUser.email ? '#1b7f63' : 'black'
+                                                                            }]}>{staff.fullName}</Text>
                                                                         </View>
                                                                     )
                                                                 })
@@ -676,13 +697,14 @@ const styles = StyleSheet.create({
     itemStaff: {
         gap: 2,
         alignItems: 'center',
-        width: '100%'
+        width: '100%',
     },
     imageStaff: {
         height: 60,
         width: 60,
         borderRadius: 30,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        borderColor: '#1b7f63'
     },
     nameStaff: {
         fontSize: 17,
@@ -694,15 +716,16 @@ const styles = StyleSheet.create({
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         color: 'grey',
-        fontSize: 15,
+        fontSize: 17,
         fontWeight: '400',
         height: '100%',
-        minWidth: 35
+        minWidth: 35,
     },
     inputAndroid: {
         color: 'grey',
-        fontSize: 15,
+        fontSize: 17,
         fontWeight: '400',
-        minWidth: 35
+        minWidth: 35,
+        padding: 0,
     },
 });

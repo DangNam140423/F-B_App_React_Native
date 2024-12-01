@@ -59,7 +59,8 @@ export default function DetailDish({ valueDish }: any) {
                 fontSize: 15,
                 fontWeight: '400',
                 color: 'grey',
-                width: '100%'
+                width: '100%',
+                marginBottom: 10
             }}>{valueDish && valueDish.description}</Text>
         </View>
     )

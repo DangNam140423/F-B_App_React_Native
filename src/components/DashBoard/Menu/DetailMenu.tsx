@@ -75,7 +75,7 @@ export default function DetailMenu({ navigation, route }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.77:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -210,7 +210,7 @@ export default function DetailMenu({ navigation, route }: any) {
     const upload = async (dataUpload: any) => {
         setLoading(true);
         Keyboard.dismiss();
-        await axios.put(`http://192.168.1.77:3000/api/edit-dish`,
+        await axios.put(`http://192.168.1.84:3000/api/edit-dish`,
             dataUpload,
             {
                 headers: {
@@ -278,7 +278,7 @@ export default function DetailMenu({ navigation, route }: any) {
 
     const DeleteMenu = async (idDish: number) => {
         setLoadingDelete(true);
-        await axios.delete(`http://192.168.1.77:3000/api/delete-dish`, {
+        await axios.delete(`http://192.168.1.84:3000/api/delete-dish`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

@@ -57,7 +57,7 @@ const ScheduleManage = () => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.get(`http://192.168.1.77:3000/api/get-all-code?type=TIME`, {
+            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=TIME`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -87,7 +87,7 @@ const ScheduleManage = () => {
     }, [token]);
 
     const getScheduleActive = async () => {
-        await axios.post(`http://192.168.1.77:3000/api/get-schedule`,
+        await axios.post(`http://192.168.1.84:3000/api/get-schedule`,
             {
                 date: timeStamp
             },
@@ -203,7 +203,7 @@ const ScheduleManage = () => {
 
 
     const createSchedule = () => {
-        axios.post(`http://192.168.1.77:3000/api/bulk-create-schedule`,
+        axios.post(`http://192.168.1.84:3000/api/bulk-create-schedule`,
             {
                 arrDataSchedule: arrScheduleSendServer,
                 numberDateToSave: 1

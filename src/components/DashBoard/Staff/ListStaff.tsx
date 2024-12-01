@@ -46,9 +46,12 @@ function ListStaff(props: any) {
     const [loadingStaff, setLoadingStaff] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    const pickerRef = useRef<any>(null);
+
+
     const getStaff = async () => {
         setLoadingStaff(true);
-        await axios.get(`http://192.168.1.77:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -67,7 +70,6 @@ function ListStaff(props: any) {
                 }
             })
             .finally(function () {
-                setLoadingStaff(false);
             });
     }
 
@@ -78,16 +80,19 @@ function ListStaff(props: any) {
     useEffect(() => {
         // // Làm trống mảng hiện tại
         // rightAnims.splice(0, rightAnims.length);
-        let arrSup: Animated.Value[] = [];
-        let arrSupHeight: Animated.Value[] = [];
+        if (arrStaff.length > 0) {
+            let arrSup: Animated.Value[] = [];
+            let arrSupHeight: Animated.Value[] = [];
 
-        arrStaff.forEach(async () => {
-            arrSup.push(new Animated.Value(0));
-            arrSupHeight.push(new Animated.Value(100));
-        });
+            arrStaff.forEach(async () => {
+                arrSup.push(new Animated.Value(0));
+                arrSupHeight.push(new Animated.Value(100));
+            });
 
-        setRightAnim(arrSup);
-        setHeightAnim(arrSupHeight);
+            setRightAnim(arrSup);
+            setHeightAnim(arrSupHeight);
+            setLoadingStaff(false);
+        }
     }, [arrStaff]);
 
 
@@ -134,7 +139,7 @@ function ListStaff(props: any) {
             cancaleAnimationDestroy(index);
             return;
         }
-        await axios.delete(`http://192.168.1.77:3000/api/delete-user`, {
+        await axios.delete(`http://192.168.1.84:3000/api/delete-user`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -211,41 +216,59 @@ function ListStaff(props: any) {
             }
             ListHeaderComponent={() => (
                 <View style={{
-                    height: 70,
+                    height: 'auto',
                     gap: 5,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between'
                 }}>
-                    {loadingStaff && !isRefreshing
+                    {/* {loadingStaff && !isRefreshing
                         &&
                         <View style={[styles.viewStaff, { justifyContent: 'center', alignItems: 'center' }]}>
                             <ActivityIndicator size="large" color="white" />
                             <Text style={{ color: 'white', fontSize: 20 }}>Loading...</Text>
                         </View>
-                    }
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    } */}
+                    <View>
                         <Text style={{
                             color: 'white',
                             fontSize: 25,
-                            fontWeight: '500'
+                            fontWeight: '500',
+                            height: 30
                         }}>Staff Management</Text>
-                        <Text style={{
-                            color: 'grey',
-                            fontSize: 15,
-                            fontWeight: '500'
-                        }}>View show</Text>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={{
                             fontSize: 17,
                             fontWeight: '400',
-                            color: 'grey'
+                            color: 'grey',
+                            height: 30
                         }}>
                             All staff information
                         </Text>
+                    </View>
 
-                        <View style={{ gap: 5, flexDirection: 'row', alignItems: 'center' }}>
+                    <Pressable
+                        style={{ flex: 1, alignItems: 'flex-end' }}
+                        onPress={() => pickerRef.current.togglePicker()}
+                    >
+                        <View style={{ height: 30, alignItems: 'center', flexDirection: 'row', gap: 5 }}>
                             <FontAwesome5 name="chevron-down" size={15} color="grey" />
+                            <Text style={{
+                                color: 'grey',
+                                fontSize: 15,
+                                fontWeight: '500',
+
+                            }}>View show</Text>
+                        </View>
+
+                        <View
+                            style={{
+                                position: 'relative',
+                                height: 30,
+                                width: '100%',
+                                alignItems: 'flex-end'
+                            }}
+                        >
                             <RNPickerSelect
+                                ref={pickerRef}
                                 onValueChange={(value) => handleFilter(value)}
                                 value={limitStaff}
                                 placeholder={{
@@ -256,15 +279,17 @@ function ListStaff(props: any) {
                                 style={pickerSelectStyles}
                                 useNativeAndroidPickerStyle={false}
                                 items={[
-                                    { label: '5 people', value: '5' },
-                                    { label: '10 people', value: '10' },
-                                    { label: 'All', value: 'All' },
+                                    { label: '5 people', value: '5', color: 'black' },
+                                    { label: '10 people', value: '10', color: 'black' },
+                                    { label: 'All', value: 'All', color: 'black' },
                                 ]}
                             />
                         </View>
-                    </View>
+                    </ Pressable>
+
                 </View>
-            )}
+            )
+            }
             renderItem={({ item, index }) => {
                 return (
                     <PanGestureHandler
@@ -447,11 +472,14 @@ const pickerSelectStyles = StyleSheet.create({
         fontSize: 17,
         fontWeight: '400',
         minWidth: 10,
+        position: 'absolute',
+        right: 0,
     },
     inputAndroid: {
         color: '#1b7f63',
         fontSize: 17,
         fontWeight: '400',
-        minWidth: 10
+        minWidth: 10,
+        padding: 0
     },
 });

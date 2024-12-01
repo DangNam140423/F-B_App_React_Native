@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Animated, Dimensions, FlatList, Image, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Animated, Dimensions, FlatList, Image, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -14,7 +14,7 @@ import saveToken from "../../../store/token/savetoken";
 import avatarDefault from "../../../store/avatar/avatarUser";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { FontAwesome, Fontisto, Octicons } from "@expo/vector-icons";
+import { Entypo, FontAwesome, Fontisto, Octicons } from "@expo/vector-icons";
 import { REACT_APP_BACKEND_URL } from "@env";
 
 const { width, height } = Dimensions.get('window');
@@ -41,15 +41,20 @@ interface FreeStaffProps {
 
 
 export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkSchedule }: FreeStaffProps) {
+    const botttomAnim = useRef(new Animated.Value(-170)).current;
     const dispatch = useDispatch();
     const token = useSelector((state: RootState) => state.app.token);
     const [arrFreeStaff, setArrFreeStaff] = useState<FreeStaff[]>([]);
+    const [arrFreeStaff2, setArrFreeStaff2] = useState<FreeStaff[]>([]);
     const [loading, setLoading] = useState(false);
     const [arrStaffSelect, setArrStaffSelect] = useState<FreeStaff[]>([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [textSearch, setTextSearch] = useState('');
+
 
     const getFreeStaff = async () => {
         setLoading(true);
-        await axios.get(`http://192.168.1.77:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
+        await axios.get(`http://192.168.1.84:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -80,11 +85,38 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
         getFreeStaff();
     }, []);
 
-    const addStaff = (staff: FreeStaff) => {
-        let staffOld: FreeStaff[] = arrStaffSelect;
-        staffOld.push(staff);
-        setArrStaffSelect(staffOld);
+
+    const toggleSelectContact = (staff: FreeStaff) => {
+        setArrStaffSelect((prevSelected: any) =>
+            prevSelected.includes(staff)
+                ? prevSelected.filter((c: any) => c !== staff)
+                : [...prevSelected, staff]
+        );
+    };
+
+    const changeTextSeach = (value: string) => {
+        setTextSearch(value);
     }
+
+    useEffect(() => {
+        let result = arrFreeStaff.filter(item =>
+            item.fullName.toLowerCase().includes(textSearch.toLowerCase())
+            // && !arrStaffSelect.includes(item)
+        );
+        if (result.length > 0 && textSearch) {
+            setArrFreeStaff2(result);
+        } else {
+            setArrFreeStaff2([])
+        }
+    }, [textSearch, arrStaffSelect, arrFreeStaff]);
+
+    useEffect(() => {
+        Animated.timing(botttomAnim, {
+            toValue: arrStaffSelect.length > 0 ? 0 : -170,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    }, [arrStaffSelect])
 
 
     const createWorkSchedule = async () => {
@@ -94,7 +126,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
             timeType: timeType,
             arrStaff
         };
-        await axios.post(`http://192.168.1.77:3000/api/create-work-schedule`,
+        await axios.post(`http://192.168.1.84:3000/api/create-work-schedule`,
             dataCreate,
             {
                 headers: {
@@ -123,6 +155,12 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
             });
     }
 
+    const onRefresh = async () => {
+        setIsRefreshing(true);
+        await getFreeStaff();
+        setIsRefreshing(false);
+    };
+
     return (
         <View style={styles.centeredView}>
             <View style={styles.modalView}>
@@ -133,37 +171,138 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
                     >
                         <AntDesign name="close" size={30} color="white" />
                     </Pressable>
+                    <Pressable
+                        disabled={arrStaffSelect.length > 0 ? false : true}
+                        onPress={createWorkSchedule}
+                    >
+                        <Entypo name="save" size={30} color={arrStaffSelect.length > 0 ? "#1b7f63" : 'grey'} />
+                    </Pressable>
                 </View>
+
+                <TextInput style={[styles.iputSearch]}
+                    value={textSearch}
+                    onChangeText={(value) => changeTextSeach(value)}
+                    placeholder="Search..."
+                    placeholderTextColor={'grey'}
+                />
+
                 <View style={styles.body}>
-                    {loading
-                        ?
+                    {loading && !isRefreshing
+                        &&
                         <View style={[{ justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }]}>
                             <ActivityIndicator size="large" color="white" />
                             <Text style={{ color: 'white', fontSize: 20 }}>Loading...</Text>
                         </View>
-                        :
-                        arrFreeStaff && arrFreeStaff.length > 0
-                            ?
-                            arrFreeStaff.map((item, index) => {
-                                return (
-                                    <View key={index}>
-                                        <Pressable
-                                            style={styles.itemStaff}
-                                            onPress={() => addStaff(item)}>
-                                            <Text>{item.fullName}</Text>
-                                        </Pressable>
-                                    </View>
-                                )
-                            })
-                            :
-                            <Text>All staffs have work schedules.</Text>
                     }
-                    <Pressable onPress={createWorkSchedule}>
-                        <Text>CRETAE</Text>
-                    </Pressable>
+                    {
+                        arrFreeStaff && arrFreeStaff.length === 0 &&
+                        <View style={{ flexDirection: 'row', marginTop: 50, justifyContent: 'center', alignItems: 'center' }}>
+                            <AntDesign name="deleteuser" size={24} color="grey" />
+                            <Text style={{ color: 'grey', fontSize: 20 }}> All staffs have work schedules.</Text>
+                        </View>
+
+                    }
+
+                    {
+                        arrFreeStaff2.length > 0
+                            ?
+                            <FlatList
+                                data={arrFreeStaff2}
+                                style={{
+                                    marginBottom: arrStaffSelect.length > 0 ? 300 : 150
+                                }}
+                                keyExtractor={(item, index) => index.toString()}
+                                keyboardShouldPersistTaps="never"
+
+                                renderItem={({ item }) => (
+                                    !arrStaffSelect.includes(item)
+                                        ?
+                                        <TouchableOpacity
+                                            onPress={() => toggleSelectContact(item)}
+                                            style={styles.contactItem}
+                                        >
+                                            <Image source={{ uri: item.image }} style={styles.contactImage} />
+                                            <View style={{
+                                                paddingLeft: 10,
+                                            }}>
+                                                <Text style={styles.contactName}>{item.fullName}</Text>
+                                                <Text style={styles.contactEmail}>{item.email}</Text>
+                                            </View>
+
+                                        </TouchableOpacity>
+                                        :
+                                        <></>
+                                )}
+                            />
+                            :
+                            <FlatList
+                                data={arrFreeStaff}
+                                style={{
+                                    marginBottom: arrStaffSelect.length > 0 ? 300 : 150
+                                }}
+                                keyExtractor={(item, index) => index.toString()}
+                                keyboardShouldPersistTaps="never"
+
+                                refreshControl={
+                                    <RefreshControl
+                                        colors={['black']}
+                                        tintColor={'white'}
+                                        refreshing={isRefreshing}
+                                        onRefresh={onRefresh}
+                                    />
+                                }
+
+                                renderItem={({ item }) => (
+                                    !arrStaffSelect.includes(item)
+                                        ?
+                                        <TouchableOpacity
+                                            onPress={() => toggleSelectContact(item)}
+                                            style={styles.contactItem}
+                                        >
+                                            <Image source={{ uri: item.image }} style={styles.contactImage} />
+                                            <View style={{
+                                                paddingLeft: 10,
+                                            }}>
+                                                <Text style={styles.contactName}>{item.fullName}</Text>
+                                                <Text style={styles.contactEmail}>{item.email}</Text>
+                                            </View>
+
+                                        </TouchableOpacity>
+                                        :
+                                        <></>
+                                )}
+                            />
+                    }
+
+
                 </View>
             </View>
-        </View>
+            <Animated.View
+                style={[styles.selectedContactsList, {
+                    bottom: botttomAnim,
+                }]}>
+                <Text style={{ color: 'white', fontSize: 20 }}>Selected Staff</Text>
+                <FlatList
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={arrStaffSelect}
+                    keyExtractor={(item: any) => item.id}
+                    style={{ paddingVertical: 20 }}
+                    renderItem={({ item }) => (
+                        <View style={styles.selectedContact}>
+                            <Image source={{ uri: item.image }} style={styles.contactSelectedImage} />
+                            <TouchableOpacity
+                                onPress={() => toggleSelectContact(item)}
+                                style={styles.removeIcon}
+                            >
+                                <AntDesign name="closecircle" size={20} color="grey" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                />
+            </Animated.View>
+        </View >
     )
 }
 
@@ -179,7 +318,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         height: height,
         width: width,
-        backgroundColor: '#1b7f63',
+        backgroundColor: '#181a20',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
@@ -193,7 +332,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         gap: 10,
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%'
     },
@@ -205,13 +344,63 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     body: {
-        flex: 1,
         width: '100%',
-        backgroundColor: 'red',
-        gap: 20
+        height: '100%'
     },
-    itemStaff: {
+    iputSearch: {
         height: 50,
-        backgroundColor: 'pink'
-    }
+        width: '100%',
+        backgroundColor: '#333',
+        borderRadius: 50,
+        paddingRight: 60,
+        color: 'white',
+        fontSize: 17,
+        paddingLeft: 20,
+        marginVertical: 20
+    },
+    selectedContactsList: {
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        borderTopRightRadius: 30,
+        borderTopLeftRadius: 30,
+        position: 'absolute',
+        width: '100%',
+        height: 170,
+        padding: 20
+    },
+    selectedContact: {
+        marginRight: 10,
+    },
+    contactSelectedImage: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        borderWidth: 1,
+        borderColor: 'green'
+    },
+    contactImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+    },
+    removeIcon: {
+        position: "absolute",
+        top: -5,
+        right: 0,
+    },
+    contactItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+        // backgroundColor: "#333",
+        marginBottom: 10,
+        // borderRadius: 12,
+    },
+    contactName: {
+        color: "#fff",
+        fontSize: 17,
+    },
+    contactEmail: {
+        color: "#cccbcb",
+        fontSize: 15,
+    },
 });

@@ -72,6 +72,7 @@ export default function Search({ searchByName, categoryChoose }: any) {
                     onChangeText={(event) => { changeTextSeach(event) }}
                     onSubmitEditing={handleSubmitEditing}
                     placeholder="Search..."
+                    placeholderTextColor={'grey'}
                 />
                 {!focused
                     ?
@@ -111,12 +112,12 @@ const styles = StyleSheet.create({
     iputSearch: {
         height: 50,
         width: '100%',
-        backgroundColor: 'white',
+        backgroundColor: '#333',
         borderColor: '#AFAFAF',
         borderWidth: 1,
         borderRadius: 50,
         paddingRight: 60,
-        color: 'black',
+        color: 'white',
         fontSize: 17
     },
     iconSearch: {

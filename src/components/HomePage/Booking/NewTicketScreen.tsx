@@ -1,5 +1,5 @@
 import { Dimensions, Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { AntDesign, Entypo, Feather, FontAwesome, Octicons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Feather, FontAwesome } from '@expo/vector-icons';
 import { barcodeToSvg } from '@adrianso/react-native-barcode-builder';
 import Svg, { SvgXml } from 'react-native-svg';
 import formatCurrency from "../../../store/format/formatPrice";
@@ -55,7 +55,7 @@ interface DetailTicketProps {
 }
 
 
-export default function DetailTicketScreen({ closeModal, valueTicket }: DetailTicketProps) {
+export default function NewTicketScreen({ closeModal, valueTicket }: DetailTicketProps) {
     const svgBarCode = barcodeToSvg({
         value: ` ${valueTicket.id}`
     });
@@ -130,16 +130,18 @@ export default function DetailTicketScreen({ closeModal, valueTicket }: DetailTi
                 </View>
             </View>
             <View style={styles.box}>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 10 }}>
-                    <Octicons name="dot-fill" size={24} color={valueTicket.payToken ? "#FFC107" : '#4CAF50'} />
-                    <Text style={[styles.status, { color: valueTicket.payToken ? "#FFC107" : '#4CAF50' }]}>
-                        {valueTicket.payToken ? 'Pending Confirmation' : 'Confirmed'}
-                    </Text>
+                <View style={{ alignItems: 'center', flexDirection: 'row', gap: 10 }}>
+                    <View style={styles.viewCheck}>
+                        <Feather name="check" size={30} color="white" />
+                    </View>
+                    <Text style={{ color: 'white', fontSize: 20 }}>Booking Successful!</Text>
                 </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 10 }}>
-                    <Octicons name="dot-fill" size={24} color={valueTicket.payStatus ? "#2196F3" : '#F44336'} />
-                    <Text style={[styles.status, { color: valueTicket.payStatus ? "#2196F3" : '#F44336' }]}>
-                        {valueTicket.payStatus ? 'Paid' : 'Unpaid'}
+                <View style={{ gap: 5 }}>
+                    <Text style={{ color: 'white', fontSize: 15 }}>
+                        Thank you for choosing us.
+                    </Text>
+                    <Text style={{ color: 'white', fontSize: 15 }}>
+                        We will call you soon to confirm your booking at <Text style={{ color: '#1b7f63', fontSize: 17, fontWeight: 'bold' }}>{valueTicket.phoneCustomer}</Text>.
                     </Text>
                 </View>
             </View>
@@ -258,16 +260,21 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         width: width,
-        height: 150,
+        height: 200,
         backgroundColor: '#181a20',
         // backgroundColor: '#23252c',
         borderTopStartRadius: 20,
         borderTopEndRadius: 20,
         padding: 20,
-        gap: 10
+        gap: 20
         // justifyContent: 'space-between'
     },
-    status: {
-        fontSize: 17,
-    },
+    viewCheck: {
+        backgroundColor: '#70be42',
+        borderRadius: 25,
+        height: 50,
+        width: 50,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
 });

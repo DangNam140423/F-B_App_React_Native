@@ -1,5 +1,6 @@
 // src/store/slices/counterSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Platform } from 'react-native';
 
 interface InfoUser {
   idUser: number,
@@ -61,6 +62,13 @@ interface WorkSchedule {
   allCodeData: string
 }
 
+interface Notification {
+  title: string,
+  body: string,
+  data: Ticket,
+  isRead: boolean
+}
+
 // Định nghĩa kiểu cho state
 interface CounterState {
   isAuthenticated: boolean,
@@ -68,7 +76,9 @@ interface CounterState {
   token: string,
   inforUser: InfoUser,
   arrTicket: Ticket[];
-  arrWorkSchedule: WorkSchedule[]
+  arrWorkSchedule: WorkSchedule[],
+  pushToken: string,
+  arrNotification: Notification[]
 }
 
 
@@ -86,7 +96,9 @@ const initialState: CounterState = {
     image: ""
   },
   arrTicket: [],
-  arrWorkSchedule: []
+  arrWorkSchedule: [],
+  pushToken: "",
+  arrNotification: []
 };
 
 const appSlice = createSlice({
@@ -110,9 +122,15 @@ const appSlice = createSlice({
     },
     setArrWorkScheduleStore: (state, action: PayloadAction<WorkSchedule[]>) => {
       state.arrWorkSchedule = action.payload
-    }
+    },
+    setPushToken: (state, action: PayloadAction<string>) => {
+      state.pushToken = action.payload
+    },
+    setArrNotification: (state, action: PayloadAction<Notification[]>) => {
+      state.arrNotification = action.payload
+    },
   },
 });
 
-export const { setRoute, setAuth, setToken, setInfoUser, setArrTicket, setArrWorkScheduleStore } = appSlice.actions;
+export const { setRoute, setAuth, setToken, setInfoUser, setArrTicket, setArrWorkScheduleStore, setPushToken, setArrNotification } = appSlice.actions;
 export default appSlice.reducer;
