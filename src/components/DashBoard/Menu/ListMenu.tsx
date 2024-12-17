@@ -65,7 +65,7 @@ export default function ListMenu({ route, navigation }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -90,7 +90,7 @@ export default function ListMenu({ route, navigation }: any) {
 
     const getMenu = async () => {
         setLoadingMenu(true);
-        await axios.get(`http://192.168.1.84:3000/api/get-all-menu?category=ALL`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-all-menu?category=ALL`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

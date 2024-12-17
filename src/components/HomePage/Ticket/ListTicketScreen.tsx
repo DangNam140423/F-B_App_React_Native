@@ -72,7 +72,7 @@ export default function ListTicketScreen({ closeModal }: DetailTicketProps) {
 
     const getAllTicket = async () => {
         setLoadingTicket(true);
-        await axios.post(`http://192.168.1.84:3000/api/user/get-customer-ticket`,
+        await axios.post(`http://192.168.1.24:3000/api/user/get-customer-ticket`,
             {
                 emailCustomer: inforUser.email
             },
@@ -149,6 +149,7 @@ export default function ListTicketScreen({ closeModal }: DetailTicketProps) {
                 <FlatList
                     data={arrTicket}
                     style={styles.viewListTicket}
+                    keyExtractor={(item, index) => index.toString()}
                     refreshControl={
                         <RefreshControl
                             colors={['black']}

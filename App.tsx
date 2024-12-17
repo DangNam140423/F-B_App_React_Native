@@ -230,7 +230,7 @@ const DashBoardApp = ({ navigation }: any) => {
   }
 
   const getTicket = async () => {
-    await axios.post(`http://192.168.1.84:3000/api/get-all-ticket`,
+    await axios.post(`http://192.168.1.24:3000/api/get-all-ticket`,
       {
         date: null
       },
@@ -260,7 +260,7 @@ const DashBoardApp = ({ navigation }: any) => {
   }
 
   const getAllNotification = async () => {
-    await axios.post(`http://192.168.1.84:3000/api/get-notification`,
+    await axios.post(`http://192.168.1.24:3000/api/get-notification`,
       {
         userId: inforUser.idUser
       },
@@ -316,8 +316,12 @@ const DashBoardApp = ({ navigation }: any) => {
       // } else {
       //   console.log("No");
       // }
-      navigation.navigate('notifications', {
-        isReload: true
+      // navigation.navigate('notifications', {
+      //   isReload: true
+      // });
+      navigation.navigate('main', {
+        screen: 'notifications',
+        params: { isReload: true },
       });
     });
   }, []);

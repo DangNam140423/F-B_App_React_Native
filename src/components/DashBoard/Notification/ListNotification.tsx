@@ -40,7 +40,7 @@ export default function ListNotification({ navigation, route }: any) {
 
 
     const getAllNotification = async () => {
-        await axios.post(`http://192.168.1.84:3000/api/get-notification`,
+        await axios.post(`http://192.168.1.24:3000/api/get-notification`,
             {
                 userId: inforUser.idUser
             },
@@ -81,7 +81,7 @@ export default function ListNotification({ navigation, route }: any) {
     };
 
     const updateNotification = async (idNotification: number) => {
-        await axios.put(`http://192.168.1.84:3000/api/update-notification`,
+        await axios.put(`http://192.168.1.24:3000/api/update-notification`,
             {
                 idNotification: idNotification
             },
@@ -121,7 +121,7 @@ export default function ListNotification({ navigation, route }: any) {
     const deleteNotifi = async (idNotification: number) => {
         await setIdDelete(idNotification);
         setLoading(true);
-        await axios.delete(`http://192.168.1.84:3000/api/delete-notification`,
+        await axios.delete(`http://192.168.1.24:3000/api/delete-notification`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ export default function ListNotification({ navigation, route }: any) {
                     renderItem={({ item }) => {
                         let date = new Date(new Date(item.createdAt).setUTCHours(0, 0, 0, 0)).toString() == new Date(new Date().setUTCHours(0, 0, 0, 0)).toString()
                             ? 'Today'
-                            : new Date(item.createdAt).getDate() + "/" + new Date(item.createdAt).getMonth() + "/" + new Date(item.createdAt).getFullYear();
+                            : new Date(item.createdAt).getDate() + "/" + (new Date(item.createdAt).getMonth() + 1) + "/" + new Date(item.createdAt).getFullYear();
 
                         let min = (new Date().getHours() * 60 + new Date().getMinutes()) - (new Date(item.createdAt).getHours() * 60 + new Date(item.createdAt).getMinutes());
 
@@ -258,17 +258,21 @@ export default function ListNotification({ navigation, route }: any) {
                                             justifyContent: 'center',
                                             alignItems: 'center'
                                         }}>
-                                        <Text style={{ fontSize: 15, color: 'grey' }}>Delete</Text>
+                                        {
+                                            loading && !isRefreshing && item.id === idDelete
+                                                ?
+                                                <View style={{
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}>
+                                                    <ActivityIndicator size="small" color="green" />
+                                                </View>
+                                                :
+                                                <Text style={{ fontSize: 15, color: 'grey' }}>Delete</Text>
+
+                                        }
                                     </Pressable>
-                                    {
-                                        loading && !isRefreshing && item.id === idDelete &&
-                                        <View style={{
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}>
-                                            <ActivityIndicator size="small" color="red" />
-                                        </View>
-                                    }
+
                                 </View>
                             </Pressable>
                         )

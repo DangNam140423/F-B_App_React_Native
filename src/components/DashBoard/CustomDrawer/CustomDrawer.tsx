@@ -41,7 +41,7 @@ export default function CustomDrawer(props: any) {
                 {
                     text: "Logout",
                     onPress: async () => {
-                        await axios.post(`http://192.168.1.84:3000/api/logout`,
+                        await axios.post(`http://192.168.1.24:3000/api/logout`,
                             {
                                 idUser: infoUser.idUser,
                                 tokenDevice: pushTokenRedux

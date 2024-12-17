@@ -53,7 +53,7 @@ export default function SignUpScreen({ navigation }: any) {
     }
 
     const handleRegister = () => {
-        axios.post(`http://192.168.1.84:3000/api/user/register`,
+        axios.post(`http://192.168.1.24:3000/api/user/register`,
             {
                 fullname: textFullName,
                 email: textEmail,

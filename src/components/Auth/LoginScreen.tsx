@@ -96,7 +96,7 @@ export default function LoginScreen({ navigation }: any) {
     const handleLogin = () => {
         Keyboard.dismiss();
         setLoading(true);
-        axios.post(`http://192.168.1.84:3000/api/login`,
+        axios.post(`http://192.168.1.24:3000/api/login`,
             {
                 email: textEmail,
                 password: textPassword,

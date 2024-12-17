@@ -88,8 +88,37 @@ const BookingScreen = ({ navigation }: any) => {
     const [loadingBooking, setLoadingBooking] = useState(false);
     const [loadingTable, setLoadingTable] = useState(false);
     const [loadingSchedule, setLoadingSchedule] = useState(false);
-
+    const [countDown, setcountDown] = useState<string | null>(null);
     const pickerRef = useRef<any>(null);
+
+    // useEffect(() => {
+    //     const targetTime = new Date();
+    //     targetTime.setHours(20);
+    //     targetTime.setMinutes(30);
+    //     targetTime.setSeconds(0);
+
+    //     const updateCountdown = () => {
+    //         const now = new Date();
+    //         const distance = targetTime.getTime() - now.getTime();
+
+    //         if (distance <= 0) {
+    //             setcountDown('Countdown Finished');
+    //             clearInterval(timer);
+    //             return;
+    //         }
+
+    //         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    //         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    //         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    //         setcountDown(`${hours}:${minutes}:${seconds}`);
+    //     };
+
+    //     const timer = setInterval(updateCountdown, 1000);
+
+    //     return () => clearInterval(timer);
+    // }, []);
+
 
 
     const buildArraySchedule = (arrSchedule: [objectSchedule]) => {
@@ -123,7 +152,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.84:3000/api/get-schedule2`,
+            await axios.post(`http://192.168.1.24:3000/api/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -156,7 +185,7 @@ const BookingScreen = ({ navigation }: any) => {
 
     const getArrTable = async () => {
         setLoadingTable(true);
-        await axios.post(`http://192.168.1.84:3000/api/get-table-empty`,
+        await axios.post(`http://192.168.1.24:3000/api/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -346,7 +375,7 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.84:3000/api/create-ticket`,
+            await axios.post(`http://192.168.1.24:3000/api/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
@@ -457,7 +486,7 @@ const BookingScreen = ({ navigation }: any) => {
                                             <RNPickerSelect
                                                 ref={pickerRef}
                                                 value={timeType}
-                                                onValueChange={(itemValue) => setTimeType(itemValue)}
+                                                onValueChange={(itemValue) => { setTimeType(itemValue) }}
                                                 style={pickerSelectStyles}
                                                 placeholder={{
                                                     label: 'Select time...',
@@ -538,7 +567,13 @@ const BookingScreen = ({ navigation }: any) => {
                                                                     fontSize: 17
                                                                 }}>{item.tableNumber}</Text>
                                                             }
-
+                                                            {!item.isEmpty && countDown &&
+                                                                <Text style={{
+                                                                    color: 'white',
+                                                                    fontSize: 13
+                                                                }}>
+                                                                    {countDown}
+                                                                </Text>}
                                                         </Pressable>
                                                     )
                                                 })
@@ -787,8 +822,8 @@ const styles = StyleSheet.create({
         // marginTop: 30
     },
     itemTable: {
-        width: 50,
-        height: 50,
+        width: 60,
+        height: 60,
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center'

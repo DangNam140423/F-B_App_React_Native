@@ -131,7 +131,7 @@ export default function CreateStaff({ navigation }: any) {
 
     const upload = async (dataUpload: any) => {
         setLoading(true);
-        await axios.post(`http://192.168.1.84:3000/api/create-new-user`,
+        await axios.post(`http://192.168.1.24:3000/api/create-new-user`,
             dataUpload,
             {
                 headers: {

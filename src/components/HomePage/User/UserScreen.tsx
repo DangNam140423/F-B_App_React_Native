@@ -68,7 +68,7 @@ export default function UserScreen({ navigation }: any) {
                 {
                     text: "Logout", // Nút đăng xuất
                     onPress: async () => {
-                        await axios.post(`http://192.168.1.84:3000/api/logout`,
+                        await axios.post(`http://192.168.1.24:3000/api/logout`,
                             {
                                 idUser: infoUser.idUser,
                                 tokenDevice: pushTokenRedux
@@ -127,7 +127,7 @@ export default function UserScreen({ navigation }: any) {
 
     const handleUpdateProfile = async () => {
         if (fullname !== infoUser.fullName || phonenumber !== infoUser.phoneNumber) {
-            await axios.put(`http://192.168.1.84:3000/api/user/update-profile`,
+            await axios.put(`http://192.168.1.24:3000/api/user/update-profile`,
                 {
                     id: infoUser.idUser,
                     fullname: fullname,

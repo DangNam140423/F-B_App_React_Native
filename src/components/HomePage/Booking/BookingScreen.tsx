@@ -176,7 +176,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.84:3000/api/user/get-schedule2`,
+            await axios.post(`http://192.168.1.24:3000/api/user/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -274,7 +274,7 @@ const BookingScreen = ({ navigation }: any) => {
     }
 
     const getArrTable = async () => {
-        await axios.post(`http://192.168.1.84:3000/api/user/get-table-empty`,
+        await axios.post(`http://192.168.1.24:3000/api/user/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -390,7 +390,7 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.84:3000/api/user/create-ticket`,
+            await axios.post(`http://192.168.1.24:3000/api/user/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
@@ -719,13 +719,13 @@ const BookingScreen = ({ navigation }: any) => {
                                                 }]} key={index}>
                                                 {item.isChooose
                                                     ?
-                                                    <>
+                                                    <View>
                                                         <Text style={{
                                                             color: 'white',
                                                             fontSize: 10
                                                         }}>{item.tableNumber}</Text>
                                                         <AntDesign name="check" size={24} color="white" />
-                                                    </>
+                                                    </View>
                                                     : <Text style={{
                                                         color: 'white',
                                                         fontSize: 17
@@ -850,24 +850,24 @@ const BookingScreen = ({ navigation }: any) => {
                                 }}
                             >
                                 {loadingBooking ?
-                                    <>
+                                    <View>
                                         <ActivityIndicator size="large" color="white" />
                                         <Text style={{
                                             color: 'white',
                                             fontWeight: '500',
                                             fontSize: 20
                                         }}>Loading..</Text>
-                                    </>
+                                    </View>
                                     :
-                                    <>
+                                    <View>
                                         <Text style={{
                                             color: 'white',
                                             fontWeight: '400',
                                             fontSize: 20
                                         }}>Booking</Text>
                                         <FontAwesome name="ticket" size={30} color="white" />
-                                    </>}
-
+                                    </View>
+                                }
                             </LinearGradient>
                         </Pressable>
                     </Animated.View>

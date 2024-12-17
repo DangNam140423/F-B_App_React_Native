@@ -51,7 +51,7 @@ function ListStaff(props: any) {
 
     const getStaff = async () => {
         setLoadingStaff(true);
-        await axios.get(`http://192.168.1.84:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -139,7 +139,7 @@ function ListStaff(props: any) {
             cancaleAnimationDestroy(index);
             return;
         }
-        await axios.delete(`http://192.168.1.84:3000/api/delete-user`, {
+        await axios.delete(`http://192.168.1.24:3000/api/delete-user`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

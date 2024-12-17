@@ -31,7 +31,7 @@ export default function ScannerTicket({ navigation }: any) {
         //         {
         //             text: "Activate",
         //             onPress: () => {
-        //                 axios.put(`http://192.168.1.84:3000/api/update-ticket`,
+        //                 axios.put(`http://192.168.1.24:3000/api/update-ticket`,
         //                     {
         //                         dataTicket: { id: data }
         //                     },

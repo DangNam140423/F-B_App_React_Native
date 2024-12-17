@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, Animated, TextInput, ImageBackground } from 'react-native';
+import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, Animated, TextInput, ImageBackground, Modal } from 'react-native';
 import axios from 'axios';
 import HeaderHome from './HeaderHome';
 import { BlurView } from 'expo-blur';
@@ -18,6 +18,9 @@ import ImageFuFu from '../Booking/ImageFuFu';
 import SpaceFuFu from './SpaceFuFu';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as SplashScreen from 'expo-splash-screen';
+import SVG_FuFu from '../../../store/logo/logo_fufu_svg';
+import SVG_AI from '../../../store/logo/logo_ai';
+import ChatYesil from './ChatYesil';
 
 const { width, height } = Dimensions.get('window');
 
@@ -62,6 +65,8 @@ export default function HomeScreen({ navigation }: any) {
     const infoUser = useSelector((state: RootState) => state.app.inforUser);
     const [loaded, setLoading] = useState(true);
 
+    const [modalVisible, setModalVisible] = useState(true);
+
     useEffect(() => {
         if (loaded) {
             SplashScreen.hideAsync();
@@ -70,7 +75,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.84:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -95,7 +100,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         const getMenu = async () => {
-            await axios.get(`http://192.168.1.84:3000/api/user/get-all-menu?category=ALL`, {
+            await axios.get(`http://192.168.1.24:3000/api/user/get-all-menu?category=ALL`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -171,12 +176,31 @@ export default function HomeScreen({ navigation }: any) {
         return null;
     }
 
+    const openChatYesil = () => {
+        setModalVisible(true);
+    }
+
+    const closeModal = () => {
+        setModalVisible(false);
+    }
+
+
     return (
         // <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}> </TouchableWithoutFeedback>
         <SafeAreaProvider style={styles.container}>
             <SafeAreaView style={styles.safeAre}>
                 <HeaderHome />
                 <View style={styles.body}>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            Alert.alert('Modal has been closed.');
+                            setModalVisible(!modalVisible);
+                        }}>
+                        <ChatYesil closeModal={closeModal} />
+                    </Modal>
                     <FlatList
                         data={category}
                         keyExtractor={(item, index) => index.toString()} // Ensure each item has a unique key
@@ -187,7 +211,28 @@ export default function HomeScreen({ navigation }: any) {
                             padding: 10,
                         }}
                         ListHeaderComponent={() => (
-                            arrMenu.length > 0 ? <TrendFood arrMenu={arrMenu} navigation={navigation} /> : <Text>No Menu Available</Text>
+                            <View>
+                                <Pressable
+                                    onPress={() => openChatYesil()}
+                                    style={styles.viewChatBot}>
+                                    <LinearGradient
+                                        colors={['#ff0000', '#00ff00', '#0000ff', '#ffff00']} // Các màu gradient
+                                        style={styles.circle}
+                                        start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
+                                        end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
+                                    >
+                                        <LinearGradient
+                                            colors={['#343434', '#343434']} // Các màu gradient
+                                            style={styles.circle_in}
+                                            start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
+                                            end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
+                                        />
+                                    </LinearGradient>
+                                    <Text style={styles.textChat}>Chat với Yesil AI</Text>
+                                    <SVG_AI style={styles.logoAI} />
+                                </Pressable>
+                                {arrMenu.length > 0 ? <TrendFood arrMenu={arrMenu} navigation={navigation} /> : <Text>No Menu Available</Text>}
+                            </View>
                         )}
 
                         renderItem={({ item }) =>
@@ -241,7 +286,6 @@ export default function HomeScreen({ navigation }: any) {
 
                         )}
                     />
-
 
                     <Animated.View style={{
                         position: 'absolute',
@@ -369,5 +413,38 @@ const styles = StyleSheet.create({
     },
     body: {
         // padding: 20,
+    },
+    viewChatBot: {
+        height: 'auto',
+        padding: 10,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 7,
+        backgroundColor: '#343434',
+        borderRadius: 50,
+        marginBottom: 10
+    },
+    circle: {
+        width: 30,
+        height: 30,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    circle_in: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    textChat: {
+        color: 'grey',
+        fontSize: 17
+    },
+    logoAI: {
+        position: 'absolute',
+        right: 10
     }
 });

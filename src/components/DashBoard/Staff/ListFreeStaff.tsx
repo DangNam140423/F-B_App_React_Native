@@ -54,7 +54,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
 
     const getFreeStaff = async () => {
         setLoading(true);
-        await axios.get(`http://192.168.1.84:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -126,7 +126,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
             timeType: timeType,
             arrStaff
         };
-        await axios.post(`http://192.168.1.84:3000/api/create-work-schedule`,
+        await axios.post(`http://192.168.1.24:3000/api/create-work-schedule`,
             dataCreate,
             {
                 headers: {

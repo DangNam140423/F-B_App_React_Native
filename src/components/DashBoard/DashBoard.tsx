@@ -121,7 +121,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataChart = async () => {
-        await axios.get(`http://192.168.1.84:3000/api/get-data-chart`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-data-chart`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -148,7 +148,7 @@ export default function DashBoard({ navigation }: any) {
 
 
     const getDataHome = async () => {
-        await axios.get(`http://192.168.1.84:3000/api/get-data-home`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-data-home`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -189,7 +189,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.84:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

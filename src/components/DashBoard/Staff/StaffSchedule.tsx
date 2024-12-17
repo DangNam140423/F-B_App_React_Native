@@ -63,7 +63,7 @@ const StaffSchedule = () => {
 
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.84:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.1.24:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
