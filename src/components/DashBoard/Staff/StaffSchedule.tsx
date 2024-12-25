@@ -8,7 +8,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
 import { setAuth } from "../../../store/slices/appSlice";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import { LongPressGestureHandler, State } from "react-native-gesture-handler";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import saveToken from "../../../store/token/savetoken";
 import avatarDefault from "../../../store/avatar/avatarUser";
@@ -16,7 +16,7 @@ import RNDateTimePicker from "@react-native-community/datetimepicker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FontAwesome, Fontisto, Octicons } from "@expo/vector-icons";
 import ListFreeStaff from "./ListFreeStaff";
-import { REACT_APP_BACKEND_URL } from "@env";
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 
 const { width, height } = Dimensions.get('window');
@@ -60,10 +60,11 @@ const StaffSchedule = () => {
     const [showName, setShowName] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isDelete, setIsDelete] = useState(false);
 
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.24:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-work-schedule?date=${date.setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -111,6 +112,7 @@ const StaffSchedule = () => {
         if (date >= new Date(new Date().setUTCHours(0, 0, 0, 0))) {
             setTimeType(timeType);
             setModalVisible(true);
+            setIsDelete(false);
         } else {
             Alert.alert(
                 "Warning",
@@ -126,6 +128,45 @@ const StaffSchedule = () => {
         }
     }
 
+    const onLongPress = (event: any) => {
+        if (event.nativeEvent.state === State.ACTIVE) {
+            setIsDelete(true);
+        }
+    };
+
+    const handleDestroyStaffSchedule = async (staff: any, workschedule: any) => {
+        console.log(staff);
+        await axios.post(`http://192.168.142.61:3000/api/cancle-work-schedule`,
+            {
+                idStaff: staff.id,
+                idWorkSchedule: workschedule.id
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            })
+            .then(function (response) {
+                console.log(workschedule.id);
+                if (response.data.errCode === 0) {
+                    getDataWorkSchedule();
+                } else {
+                    alert(response.data.errMessage);
+                }
+            })
+            .catch(async function (error) {
+                if (error.response && [401, 403].includes(error.response.status)) {
+                    await saveToken("token", "");
+                    dispatch(setAuth(false));
+                } else {
+                    console.log(error);
+                }
+            })
+            .finally(function () {
+            });
+    }
+
     const onRefresh = async () => {
         setIsRefreshing(true);
         await getDataWorkSchedule();
@@ -135,11 +176,11 @@ const StaffSchedule = () => {
 
     return (
         <FlatList
-            data={[]}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             // keyExtractor={(item, index) => index.toString()}
-            renderItem={() => (<></>)}
+            data={[]}
+            renderItem={() => (<View></View>)}
             refreshControl={
                 <RefreshControl
                     colors={['black']}
@@ -219,7 +260,27 @@ const StaffSchedule = () => {
                             />
                         </View>
                     }
-
+                    <View style={{
+                        height: 40,
+                    }}>
+                        {
+                            isDelete &&
+                            <Pressable
+                                onPress={() => setIsDelete(false)}
+                                style={{
+                                    backgroundColor: "#1b7f63",
+                                    position: 'absolute',
+                                    right: 0,
+                                    bottom: 0,
+                                    borderRadius: 12,
+                                    padding: 5,
+                                    width: 80,
+                                    alignItems: 'center'
+                                }}>
+                                <Text style={{ fontSize: 15, color: 'white' }}>Cancle</Text>
+                            </Pressable>
+                        }
+                    </View>
                     <View style={styles.viewWorkSchedule}>
                         {
                             arrWorkSchedule.length > 0 &&
@@ -241,15 +302,35 @@ const StaffSchedule = () => {
                                                     {
                                                         workschedule.userData.length > 0 && workschedule.userData.map((staff, index) => {
                                                             return (
-                                                                <View style={styles.itemStaff} key={index}>
-                                                                    <Image style={styles.imageStaff} source={{ uri: staff.image ? staff.image : avatarDefault }} />
-                                                                    {
-                                                                        showName &&
-                                                                        <Text
-                                                                            numberOfLines={2}
-                                                                            style={styles.nameStaff}>{staff.fullName}</Text>
-                                                                    }
-                                                                </View>
+                                                                <LongPressGestureHandler
+                                                                    onHandlerStateChange={onLongPress}
+                                                                    minDurationMs={1000} // Thời gian giữ tối thiểu
+                                                                    key={index}>
+                                                                    <View style={styles.itemStaff}>
+                                                                        <Image style={styles.imageStaff} source={{ uri: staff.image ? staff.image : avatarDefault }} />
+                                                                        {
+                                                                            showName &&
+                                                                            <Text
+                                                                                numberOfLines={2}
+                                                                                style={styles.nameStaff}>{staff.fullName}</Text>
+                                                                        }
+                                                                        {
+                                                                            isDelete &&
+                                                                            <Pressable
+                                                                                onPress={() => handleDestroyStaffSchedule(staff, workschedule)}
+                                                                                style={{
+                                                                                    backgroundColor: "#eb3c3c",
+                                                                                    position: 'absolute',
+                                                                                    top: -10,
+                                                                                    right: -10,
+                                                                                    borderRadius: 12,
+                                                                                    padding: 5,
+                                                                                }}>
+                                                                                <Fontisto name="minus-a" size={15} color="white" />
+                                                                            </Pressable>
+                                                                        }
+                                                                    </View>
+                                                                </LongPressGestureHandler>
                                                             )
                                                         })
                                                     }
@@ -267,7 +348,7 @@ const StaffSchedule = () => {
 
                         }
                     </View>
-                </View>
+                </View >
             )}
         />
     )
@@ -299,7 +380,6 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     viewWorkSchedule: {
-        marginTop: 40,
         width: '100%',
         marginBottom: 20,
         gap: 20,
@@ -331,7 +411,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: "wrap",
         gap: 5,
-        paddingTop: 20
+        paddingTop: 20,
     },
     itemStaff: {
         gap: 2,

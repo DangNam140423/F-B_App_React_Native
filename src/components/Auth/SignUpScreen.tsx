@@ -4,7 +4,7 @@ import { Dimensions, ImageBackground, Keyboard, KeyboardAvoidingView, Platform, 
 import { SafeAreaView } from "react-native-safe-area-context"
 import Feather from '@expo/vector-icons/Feather';
 import axios from "axios";
-import { REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 
 const { width, height } = Dimensions.get('window');
@@ -53,7 +53,7 @@ export default function SignUpScreen({ navigation }: any) {
     }
 
     const handleRegister = () => {
-        axios.post(`http://192.168.1.24:3000/api/user/register`,
+        axios.post(`http://192.168.142.61:3000/api/user/register`,
             {
                 fullname: textFullName,
                 email: textEmail,

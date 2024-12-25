@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { setArrWorkScheduleStore, setAuth, setRoute, setToken } from '../../store/slices/appSlice';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_BACKEND_URL, REACT_APP_IP } from '@env';
 import { VictoryAxis, VictoryBar, VictoryChart, VictoryGroup, VictoryLine, VictoryPolarAxis, VictoryScatter, VictoryTheme } from "victory-native";
 import { RootState } from '../../store/store';
 import * as SecureStore from 'expo-secure-store';
@@ -121,7 +121,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataChart = async () => {
-        await axios.get(`http://192.168.1.24:3000/api/get-data-chart`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-data-chart`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -148,7 +148,7 @@ export default function DashBoard({ navigation }: any) {
 
 
     const getDataHome = async () => {
-        await axios.get(`http://192.168.1.24:3000/api/get-data-home`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-data-home`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -189,7 +189,7 @@ export default function DashBoard({ navigation }: any) {
     }
 
     const getDataWorkSchedule = async () => {
-        await axios.get(`http://192.168.1.24:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-work-schedule?date=${new Date().setUTCHours(0, 0, 0, 0)}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -298,7 +298,7 @@ export default function DashBoard({ navigation }: any) {
 
 
                         renderItem={() =>
-                            <></>
+                            <View></View>
                         }
 
                         ListFooterComponent={() => (

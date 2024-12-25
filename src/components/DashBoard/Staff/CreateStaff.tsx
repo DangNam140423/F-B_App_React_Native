@@ -16,8 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import ImageView from "react-native-image-viewing";
 import saveToken from "../../../store/token/savetoken";
-import { REACT_APP_BACKEND_URL } from "@env";
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -131,7 +130,7 @@ export default function CreateStaff({ navigation }: any) {
 
     const upload = async (dataUpload: any) => {
         setLoading(true);
-        await axios.post(`http://192.168.1.24:3000/api/create-new-user`,
+        await axios.post(`http://192.168.142.61:3000/api/create-new-user`,
             dataUpload,
             {
                 headers: {
@@ -418,13 +417,14 @@ export default function CreateStaff({ navigation }: any) {
                                                 <Text style={{ color: 'white', fontSize: 20 }}>Loading...</Text>
                                             </View>
                                             :
-                                            <>
+                                            <View>
                                                 <Text style={{
                                                     color: 'white',
                                                     fontSize: 17,
                                                     fontWeight: '500'
                                                 }}>Create User</Text>
-                                                <Ionicons name="create-outline" size={24} color="white" /></>
+                                                <Ionicons name="create-outline" size={24} color="white" />
+                                            </View>
                                         }
 
                                     </Pressable>

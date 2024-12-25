@@ -121,6 +121,7 @@ export default function DetailTicket({ updateStatus, updatePayStatus, closeModal
                             </View>
                         </View>
                         <View style={styles.footerTicket}>
+                            <Text style={{ fontWeight: 'bold' }}>Code: {valueTicket.id}</Text>
                             <View style={styles.topTicket}></View>
                             <View style={styles.leftTicket}></View>
                             <View style={styles.rightTicket}></View>
@@ -265,7 +266,8 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 24,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: 1
     },
     topTicket: {
         position: 'absolute',

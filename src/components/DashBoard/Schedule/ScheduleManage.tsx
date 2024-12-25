@@ -11,8 +11,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { REACT_APP_BACKEND_URL } from '@env';
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,7 +55,7 @@ const ScheduleManage = () => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=TIME`, {
+            await axios.get(`http://192.168.142.61:3000/api/get-all-code?type=TIME`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -86,7 +85,7 @@ const ScheduleManage = () => {
     }, [token]);
 
     const getScheduleActive = async () => {
-        await axios.post(`http://192.168.1.24:3000/api/get-schedule`,
+        await axios.post(`http://192.168.142.61:3000/api/get-schedule`,
             {
                 date: timeStamp
             },
@@ -202,7 +201,7 @@ const ScheduleManage = () => {
 
 
     const createSchedule = () => {
-        axios.post(`http://192.168.1.24:3000/api/bulk-create-schedule`,
+        axios.post(`http://192.168.142.61:3000/api/bulk-create-schedule`,
             {
                 arrDataSchedule: arrScheduleSendServer,
                 numberDateToSave: 1
@@ -254,7 +253,7 @@ const ScheduleManage = () => {
                 <View style={styles.body}>
                     <FlatList
                         data={[]}
-                        renderItem={() => (<></>)}
+                        renderItem={() => (<View></View>)}
                         showsHorizontalScrollIndicator={false}
                         showsVerticalScrollIndicator={false}
                         refreshControl={

@@ -14,7 +14,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Fontisto, MaterialCommunityIcons, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import formatCurrency from "../../../store/format/formatPrice";
-import { REACT_APP_BACKEND_URL } from "@env";
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 interface Notification {
     id: number,
@@ -40,7 +40,7 @@ export default function ListNotification({ navigation, route }: any) {
 
 
     const getAllNotification = async () => {
-        await axios.post(`http://192.168.1.24:3000/api/get-notification`,
+        await axios.post(`http://192.168.142.61:3000/api/get-notification`,
             {
                 userId: inforUser.idUser
             },
@@ -81,7 +81,7 @@ export default function ListNotification({ navigation, route }: any) {
     };
 
     const updateNotification = async (idNotification: number) => {
-        await axios.put(`http://192.168.1.24:3000/api/update-notification`,
+        await axios.put(`http://192.168.142.61:3000/api/update-notification`,
             {
                 idNotification: idNotification
             },
@@ -121,7 +121,7 @@ export default function ListNotification({ navigation, route }: any) {
     const deleteNotifi = async (idNotification: number) => {
         await setIdDelete(idNotification);
         setLoading(true);
-        await axios.delete(`http://192.168.1.24:3000/api/delete-notification`,
+        await axios.delete(`http://192.168.142.61:3000/api/delete-notification`,
             {
                 headers: {
                     'Content-Type': 'application/json',

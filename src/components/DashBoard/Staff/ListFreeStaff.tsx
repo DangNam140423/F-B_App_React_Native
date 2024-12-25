@@ -15,7 +15,7 @@ import avatarDefault from "../../../store/avatar/avatarUser";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Entypo, FontAwesome, Fontisto, Octicons } from "@expo/vector-icons";
-import { REACT_APP_BACKEND_URL } from "@env";
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -54,7 +54,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
 
     const getFreeStaff = async () => {
         setLoading(true);
-        await axios.get(`http://192.168.1.24:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-free-staff?date=${date.setUTCHours(0, 0, 0, 0)}&timeType=${timeType}`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -126,7 +126,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
             timeType: timeType,
             arrStaff
         };
-        await axios.post(`http://192.168.1.24:3000/api/create-work-schedule`,
+        await axios.post(`http://192.168.142.61:3000/api/create-work-schedule`,
             dataCreate,
             {
                 headers: {
@@ -159,6 +159,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
         setIsRefreshing(true);
         await getFreeStaff();
         setIsRefreshing(false);
+        setArrStaffSelect([]);
     };
 
     return (
@@ -231,7 +232,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
 
                                         </TouchableOpacity>
                                         :
-                                        <></>
+                                        <View></View>
                                 )}
                             />
                             :
@@ -269,7 +270,7 @@ export default function ListFreeStaff({ date, timeType, closeModal, getDataWorkS
 
                                         </TouchableOpacity>
                                         :
-                                        <></>
+                                        <View></View>
                                 )}
                             />
                     }

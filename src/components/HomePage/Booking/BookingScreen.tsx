@@ -10,11 +10,10 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { createStackNavigator } from '@react-navigation/stack';
 import SearchScreen from './SearchScreen';
 import MyHeader from '../CustomTabBar/CustomHeader';
-import BoxFriend from '../BoxFriend/BoxFriend';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
 import { setAuth, setToken } from '../../../store/slices/appSlice';
-import { REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -176,7 +175,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.24:3000/api/user/get-schedule2`,
+            await axios.post(`http://192.168.142.61:3000/api/user/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -274,7 +273,7 @@ const BookingScreen = ({ navigation }: any) => {
     }
 
     const getArrTable = async () => {
-        await axios.post(`http://192.168.1.24:3000/api/user/get-table-empty`,
+        await axios.post(`http://192.168.142.61:3000/api/user/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -390,7 +389,7 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.24:3000/api/user/create-ticket`,
+            await axios.post(`http://192.168.142.61:3000/api/user/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
@@ -859,7 +858,11 @@ const BookingScreen = ({ navigation }: any) => {
                                         }}>Loading..</Text>
                                     </View>
                                     :
-                                    <View>
+                                    <View style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        gap: 10
+                                    }}>
                                         <Text style={{
                                             color: 'white',
                                             fontWeight: '400',

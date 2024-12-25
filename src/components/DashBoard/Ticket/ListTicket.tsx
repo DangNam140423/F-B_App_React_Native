@@ -15,8 +15,7 @@ import { Fontisto, MaterialIcons } from "@expo/vector-icons";
 import DetailTicket from "./DetailTicket";
 import { StatusBar } from "expo-status-bar";
 import formatCurrency from "../../../store/format/formatPrice";
-import { REACT_APP_BACKEND_URL } from "@env";
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 const { width, height } = Dimensions.get('window');
 
 interface StaffData {
@@ -98,7 +97,7 @@ export default function ListTicket({ navigation, route }: any) {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=TIME`, {
+            await axios.get(`http://192.168.142.61:3000/api/get-all-code?type=TIME`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -128,7 +127,7 @@ export default function ListTicket({ navigation, route }: any) {
     }, [token]);
 
     const getTicket = async () => {
-        await axios.post(`http://192.168.1.24:3000/api/get-all-ticket`,
+        await axios.post(`http://192.168.142.61:3000/api/get-all-ticket`,
             {
                 date: timeStamp,
                 dataSearch: ""
@@ -165,7 +164,7 @@ export default function ListTicket({ navigation, route }: any) {
 
     useEffect(() => {
         if (parameter && parameter.getTicket && parameter.idTicket) {
-            axios.post(`http://192.168.1.24:3000/api/get-ticket-by-id`,
+            axios.post(`http://192.168.142.61:3000/api/get-ticket-by-id`,
                 {
                     id: parameter.idTicket
                 },
@@ -233,7 +232,7 @@ export default function ListTicket({ navigation, route }: any) {
                     text: "Delete",
                     style: 'destructive',
                     onPress: () => {
-                        axios.delete(`http://192.168.1.24:3000/api/delete-ticket`,
+                        axios.delete(`http://192.168.142.61:3000/api/delete-ticket`,
                             {
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -263,7 +262,7 @@ export default function ListTicket({ navigation, route }: any) {
                 {
                     text: "Activate",
                     onPress: () => {
-                        axios.put(`http://192.168.1.24:3000/api/update-ticket`,
+                        axios.put(`http://192.168.142.61:3000/api/update-ticket`,
                             {
                                 dataTicket: item,
                                 type: 'active'
@@ -309,7 +308,7 @@ export default function ListTicket({ navigation, route }: any) {
                     text: "Pay",
                     style: 'default',
                     onPress: () => {
-                        axios.put(`http://192.168.1.24:3000/api/update-ticket`,
+                        axios.put(`http://192.168.142.61:3000/api/update-ticket`,
                             {
                                 dataTicket: item,
                                 type: 'pay'
@@ -444,7 +443,7 @@ export default function ListTicket({ navigation, route }: any) {
                             </View>
                         )}
 
-                        renderItem={({ item }) => (<></>)}
+                        renderItem={({ item }) => (<View></View>)}
 
                         ListFooterComponent={() => (
                             <FlatList

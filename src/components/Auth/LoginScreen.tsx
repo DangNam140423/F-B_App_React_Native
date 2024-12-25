@@ -6,7 +6,7 @@ import Feather from '@expo/vector-icons/Feather';
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuth, setInfoUser, setPushToken, setToken } from "../../store/slices/appSlice";
-import { REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 import { registerIndieID } from "native-notify";
 import * as Application from 'expo-application';
 import { RootState } from "../../store/store";
@@ -96,7 +96,7 @@ export default function LoginScreen({ navigation }: any) {
     const handleLogin = () => {
         Keyboard.dismiss();
         setLoading(true);
-        axios.post(`http://192.168.1.24:3000/api/login`,
+        axios.post(`http://192.168.142.61:3000/api/login`,
             {
                 email: textEmail,
                 password: textPassword,

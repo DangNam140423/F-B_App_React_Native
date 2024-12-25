@@ -12,7 +12,7 @@ import { PanGestureHandler } from "react-native-gesture-handler";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import saveToken from "../../../store/token/savetoken";
 import StaffSchedule from "./StaffSchedule";
-import { REACT_APP_BACKEND_URL } from "@env";
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import StaffTabBar from "./StaffTabBar";
@@ -51,7 +51,7 @@ function ListStaff(props: any) {
 
     const getStaff = async () => {
         setLoadingStaff(true);
-        await axios.get(`http://192.168.1.24:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-all-user?id=ALL&limit=${limitStaff}&page=1`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -139,7 +139,7 @@ function ListStaff(props: any) {
             cancaleAnimationDestroy(index);
             return;
         }
-        await axios.delete(`http://192.168.1.24:3000/api/delete-user`, {
+        await axios.delete(`http://192.168.142.61:3000/api/delete-user`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

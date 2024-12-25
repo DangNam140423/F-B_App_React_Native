@@ -23,7 +23,7 @@ import * as SecureStore from 'expo-secure-store';
 import { setArrTicket, setAuth, setInfoUser, setPushToken, setRoute, setToken } from './src/store/slices/appSlice';
 import registerNNPushToken from 'native-notify';
 import { registerIndieID, unregisterIndieDevice, getNotificationInbox, registerFollowMasterID, registerFollowerID, postFollowingID, unfollowMasterID, updateFollowersList, getFollowMaster, deleteFollowMaster } from 'native-notify';
-import { REACT_APP_JWT_SECRET, REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 import JWT from 'expo-jwt';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
@@ -230,7 +230,7 @@ const DashBoardApp = ({ navigation }: any) => {
   }
 
   const getTicket = async () => {
-    await axios.post(`http://192.168.1.24:3000/api/get-all-ticket`,
+    await axios.post(`http://192.168.142.61:3000/api/get-all-ticket`,
       {
         date: null
       },
@@ -260,7 +260,7 @@ const DashBoardApp = ({ navigation }: any) => {
   }
 
   const getAllNotification = async () => {
-    await axios.post(`http://192.168.1.24:3000/api/get-notification`,
+    await axios.post(`http://192.168.142.61:3000/api/get-notification`,
       {
         userId: inforUser.idUser
       },

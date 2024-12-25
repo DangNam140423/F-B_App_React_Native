@@ -10,7 +10,7 @@ import { setAuth } from "../../../store/slices/appSlice";
 import formatCurrency from "../../../store/format/formatPrice";
 import { StatusBar } from "expo-status-bar";
 import DetailTicketScreen from "./DetailTicketScreen";
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 interface StaffData {
     id: number | null;
@@ -72,7 +72,7 @@ export default function ListTicketScreen({ closeModal }: DetailTicketProps) {
 
     const getAllTicket = async () => {
         setLoadingTicket(true);
-        await axios.post(`http://192.168.1.24:3000/api/user/get-customer-ticket`,
+        await axios.post(`http://192.168.142.61:3000/api/user/get-customer-ticket`,
             {
                 emailCustomer: inforUser.email
             },

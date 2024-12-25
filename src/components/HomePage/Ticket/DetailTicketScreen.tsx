@@ -57,7 +57,7 @@ interface DetailTicketProps {
 
 export default function DetailTicketScreen({ closeModal, valueTicket }: DetailTicketProps) {
     const svgBarCode = barcodeToSvg({
-        value: ` ${valueTicket.id}`
+        value: `${valueTicket.id}`,
     });
 
     return (
@@ -121,10 +121,11 @@ export default function DetailTicketScreen({ closeModal, valueTicket }: DetailTi
                             </View>
                         </View>
                         <View style={styles.footerTicket}>
+                            <Text style={{ fontWeight: 'bold' }}>Code: {valueTicket.id}</Text>
                             <View style={styles.topTicket}></View>
                             <View style={styles.leftTicket}></View>
                             <View style={styles.rightTicket}></View>
-                            <SvgXml xml={svgBarCode} width="80%" height="50%" />
+                            <SvgXml xml={svgBarCode} width="80%" />
                         </View>
                     </View>
                 </View>
@@ -226,7 +227,8 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 24,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: 1
     },
     topTicket: {
         position: 'absolute',

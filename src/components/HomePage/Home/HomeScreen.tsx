@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, Animated, TextInput, ImageBackground, Modal } from 'react-native';
+import { StyleSheet, Dimensions, Text, View, Keyboard, TouchableWithoutFeedback, Button, ScrollView, FlatList, Pressable, Alert, Image, Animated, TextInput, ImageBackground, Modal, Easing } from 'react-native';
 import axios from 'axios';
 import HeaderHome from './HeaderHome';
 import { BlurView } from 'expo-blur';
@@ -21,7 +21,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import SVG_FuFu from '../../../store/logo/logo_fufu_svg';
 import SVG_AI from '../../../store/logo/logo_ai';
 import ChatYesil from './ChatYesil';
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 const { width, height } = Dimensions.get('window');
 
 interface objectCategory {
@@ -56,6 +56,11 @@ async function saveToken(key: string, value: string) {
 export default function HomeScreen({ navigation }: any) {
     const boxCall = useRef(new Animated.Value(0)).current;
     const iconCall = useRef(new Animated.Value(100)).current;
+    const circleChatBot = useRef(new Animated.Value(0)).current;
+    const spin = circleChatBot.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg']
+    });
 
 
     const dispatch = useDispatch();
@@ -65,7 +70,7 @@ export default function HomeScreen({ navigation }: any) {
     const infoUser = useSelector((state: RootState) => state.app.inforUser);
     const [loaded, setLoading] = useState(true);
 
-    const [modalVisible, setModalVisible] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         if (loaded) {
@@ -74,8 +79,22 @@ export default function HomeScreen({ navigation }: any) {
     }, [loaded]);
 
     useEffect(() => {
+        Animated.loop(
+            Animated.timing(
+                circleChatBot,
+                {
+                    toValue: 1,
+                    duration: 1500,
+                    easing: Easing.linear,
+                    useNativeDriver: true
+                }
+            )
+        ).start();
+    }, []);
+
+    useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.142.61:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -100,7 +119,7 @@ export default function HomeScreen({ navigation }: any) {
 
     useEffect(() => {
         const getMenu = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/user/get-all-menu?category=ALL`, {
+            await axios.get(`http://192.168.142.61:3000/api/user/get-all-menu?category=ALL`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -201,6 +220,30 @@ export default function HomeScreen({ navigation }: any) {
                         }}>
                         <ChatYesil closeModal={closeModal} />
                     </Modal>
+                    <Pressable
+                        onPress={() => openChatYesil()}
+                        style={styles.viewChatBot}>
+                        <Animated.View
+                            style={{
+                                transform: [{ rotate: spin }]
+                            }}>
+                            <LinearGradient
+                                colors={['#ff0000', '#00ff00', '#0000ff', '#ffff00']} // Các màu gradient
+                                style={styles.circle}
+                                start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
+                                end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
+                            >
+                                <LinearGradient
+                                    colors={['#343434', '#343434']} // Các màu gradient
+                                    style={styles.circle_in}
+                                    start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
+                                    end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
+                                />
+                            </LinearGradient>
+                        </Animated.View>
+                        <Text style={styles.textChat}>Chat với Yesil AI</Text>
+                        <SVG_AI style={styles.logoAI} />
+                    </Pressable>
                     <FlatList
                         data={category}
                         keyExtractor={(item, index) => index.toString()} // Ensure each item has a unique key
@@ -212,25 +255,8 @@ export default function HomeScreen({ navigation }: any) {
                         }}
                         ListHeaderComponent={() => (
                             <View>
-                                <Pressable
-                                    onPress={() => openChatYesil()}
-                                    style={styles.viewChatBot}>
-                                    <LinearGradient
-                                        colors={['#ff0000', '#00ff00', '#0000ff', '#ffff00']} // Các màu gradient
-                                        style={styles.circle}
-                                        start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
-                                        end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
-                                    >
-                                        <LinearGradient
-                                            colors={['#343434', '#343434']} // Các màu gradient
-                                            style={styles.circle_in}
-                                            start={{ x: 0, y: 0 }} // Điểm bắt đầu gradient
-                                            end={{ x: 1, y: 1 }}   // Điểm kết thúc gradient
-                                        />
-                                    </LinearGradient>
-                                    <Text style={styles.textChat}>Chat với Yesil AI</Text>
-                                    <SVG_AI style={styles.logoAI} />
-                                </Pressable>
+
+
                                 {arrMenu.length > 0 ? <TrendFood arrMenu={arrMenu} navigation={navigation} /> : <Text>No Menu Available</Text>}
                             </View>
                         )}
@@ -279,7 +305,7 @@ export default function HomeScreen({ navigation }: any) {
                             <View style={{
                                 width: '100%',
                                 height: 500,
-                                marginBottom: 100
+                                marginBottom: 150
                             }}>
                                 <SpaceFuFu />
                             </View>
@@ -289,7 +315,7 @@ export default function HomeScreen({ navigation }: any) {
 
                     <Animated.View style={{
                         position: 'absolute',
-                        bottom: 90,
+                        bottom: 150,
                         right: boxCall.interpolate({
                             inputRange: [0, 100],
                             outputRange: ['0%', '-100%'],
@@ -372,7 +398,7 @@ export default function HomeScreen({ navigation }: any) {
                     <Animated.View
                         style={{
                             position: 'absolute',
-                            bottom: 90,
+                            bottom: 150,
                             right: iconCall.interpolate({
                                 inputRange: [0, 100],
                                 outputRange: ['0%', '-100%'],

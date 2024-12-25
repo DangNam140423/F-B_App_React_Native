@@ -16,8 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import ImageView from "react-native-image-viewing";
 import saveToken from "../../../store/token/savetoken";
-import { REACT_APP_BACKEND_URL } from "@env";
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 const { width, height } = Dimensions.get('window');
 
@@ -75,7 +74,7 @@ export default function DetailMenu({ navigation, route }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.142.61:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -210,7 +209,7 @@ export default function DetailMenu({ navigation, route }: any) {
     const upload = async (dataUpload: any) => {
         setLoading(true);
         Keyboard.dismiss();
-        await axios.put(`http://192.168.1.24:3000/api/edit-dish`,
+        await axios.put(`http://192.168.142.61:3000/api/edit-dish`,
             dataUpload,
             {
                 headers: {
@@ -278,7 +277,7 @@ export default function DetailMenu({ navigation, route }: any) {
 
     const DeleteMenu = async (idDish: number) => {
         setLoadingDelete(true);
-        await axios.delete(`http://192.168.1.24:3000/api/delete-dish`, {
+        await axios.delete(`http://192.168.142.61:3000/api/delete-dish`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -419,14 +418,14 @@ export default function DetailMenu({ navigation, route }: any) {
                                                 <Text style={{ color: 'white', fontSize: 20 }}>Loading...</Text>
                                             </View>
                                             :
-                                            <>
+                                            <View>
                                                 <Text style={{
                                                     color: 'white',
                                                     fontSize: 17,
                                                     fontWeight: '500'
                                                 }}>Save</Text>
                                                 <Ionicons name="create-outline" size={24} color="white" />
-                                            </>
+                                            </View>
                                         }
 
                                     </Pressable>

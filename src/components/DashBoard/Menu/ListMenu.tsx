@@ -13,8 +13,7 @@ import { setAuth } from '../../../store/slices/appSlice';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import DetailMenu from './DetailMenu';
-import { REACT_APP_BACKEND_URL } from '@env';
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 
 const { width, height } = Dimensions.get('window');
 interface objectCategory {
@@ -65,7 +64,7 @@ export default function ListMenu({ route, navigation }: any) {
 
     useEffect(() => {
         const getCategory = async () => {
-            await axios.get(`http://192.168.1.24:3000/api/get-all-code?type=DISHES_CATEGORY`, {
+            await axios.get(`http://192.168.142.61:3000/api/get-all-code?type=DISHES_CATEGORY`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -90,7 +89,7 @@ export default function ListMenu({ route, navigation }: any) {
 
     const getMenu = async () => {
         setLoadingMenu(true);
-        await axios.get(`http://192.168.1.24:3000/api/get-all-menu?category=ALL`, {
+        await axios.get(`http://192.168.142.61:3000/api/get-all-menu?category=ALL`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -254,9 +253,7 @@ export default function ListMenu({ route, navigation }: any) {
                             />
                         }
 
-                        renderItem={({ item }) =>
-                            <></>
-                        }
+                        renderItem={({ item }) => <View></View>}
                         ListFooterComponent={() => (
                             <View style={{ marginVertical: 10, flexDirection: 'row', flexWrap: 'wrap', rowGap: 20 }}>
                                 {(arrMenu.length > 0 && !inputSearch && !categoryChoose

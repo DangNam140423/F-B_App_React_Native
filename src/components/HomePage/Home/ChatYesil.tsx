@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Animated, Dimensions, Easing, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { AntDesign, Entypo, Feather, FontAwesome, Octicons } from '@expo/vector-icons';
 import { barcodeToSvg } from '@adrianso/react-native-barcode-builder';
 import Svg, { SvgXml } from 'react-native-svg';
@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 const { width, height } = Dimensions.get('window');
 
 
@@ -17,14 +17,29 @@ interface ChatYesilProps {
     closeModal: () => void;
 }
 
+interface mess {
+    id: string,
+    text: string,
+    own: string,
+    data: any
+}
+
 
 export default function ChatYesil({ closeModal }: ChatYesilProps) {
     const token = useSelector((state: RootState) => state.app.token);
     const infoUser = useSelector((state: RootState) => state.app.inforUser)
     const [textChat, setTextChat] = useState<string>("");
-    const [messages, setMessages] = useState([
-        { id: '1', text: 'Chào cậu. Tớ có thể giúp gì cho cậu?', own: 'yesil' },
+    const [messages, setMessages] = useState<mess[]>([
+        { id: '', text: '', own: '', data: null }
     ]);
+    const [loadingMess, setLoadingMess] = useState(false);
+    const [dots, setDots] = useState('');
+    const circleChatBot = useRef(new Animated.Value(0)).current;
+    const spin = circleChatBot.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg']
+    });
+
     const flatListRef = useRef<FlatList<any>>(null);
     const scrollViewRef = useRef<ScrollView>(null);
     const textInputRef = useRef<TextInput>(null);
@@ -32,6 +47,31 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
     //     const { width, height } = event.nativeEvent.layout;
     // };
 
+    useEffect(() => {
+        Animated.loop(
+            Animated.timing(
+                circleChatBot,
+                {
+                    toValue: 1,
+                    duration: 1500,
+                    easing: Easing.linear,
+                    useNativeDriver: true
+                }
+            )
+        ).start();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDots(prevDots => (prevDots.length < 3 ? prevDots + '.' : ''));
+        }, 500); // Thay đổi dấu chấm mỗi 500ms
+
+        return () => clearInterval(interval);
+    }, [loadingMess]);
+
+    useEffect(() => {
+        sendMess(`Chào`);
+    }, []);
 
     useEffect(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
@@ -51,7 +91,7 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
 
     const addMessage = () => {
         if (textChat) {
-            const newMessage = { id: (messages.length + 1).toString(), text: textChat, own: 'me' };
+            const newMessage = { id: (messages.length + 1).toString(), text: textChat, own: 'me', data: null };
             setMessages(prevMessages => [...prevMessages, newMessage]);
             setTextChat("");
             sendMess(textChat);
@@ -59,7 +99,8 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
     };
 
     const sendMess = async (textChat: string) => {
-        await axios.post(`http://192.168.1.24:3000/chat-with-yesil`,
+        setLoadingMess(true);
+        await axios.post(`http://192.168.142.61:3000/chat-with-yesil`,
             {
                 textChat
             },
@@ -70,11 +111,11 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                 }
             })
             .then(function (response) {
-                if (response.data.param) {
+                if (response.data?.param) {
                     const newMessage = { id: (messages.length + 1).toString(), text: response.data.textOfYesil, own: 'yesil', data: response.data.param };
                     setMessages(prevMessages => [...prevMessages, newMessage]);
                 } else {
-                    const newMessage = { id: (messages.length + 1).toString(), text: response.data.textOfYesil, own: 'yesil' };
+                    const newMessage = { id: (messages.length + 1).toString(), text: response.data.textOfYesil, own: 'yesil', data: null };
                     setMessages(prevMessages => [...prevMessages, newMessage]);
                 }
             })
@@ -82,6 +123,7 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                 console.log(error);
             })
             .finally(function () {
+                setLoadingMess(false);
             });
     }
 
@@ -92,7 +134,15 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
     }
 
     const handleBooking = () => {
+        const newMessage = { id: (messages.length + 1).toString(), text: 'Xác nhận', own: 'me', data: null };
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+        sendMess('Xác nhận');
+    }
 
+    const handleCancleBooking = () => {
+        const newMessage = { id: (messages.length + 1).toString(), text: 'Hủy', own: 'me', data: null };
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+        sendMess('Hủy');
     }
 
     return (
@@ -106,22 +156,27 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                                 alignItems: 'center',
                                 gap: 10
                             }}>
-                                <View
-                                    style={styles.circle_out}>
-                                    <LinearGradient
-                                        colors={['#ff0000', '#00ff00', '#0000ff', '#ffff00']}
-                                        style={styles.circle}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 1 }}
-                                    >
+                                <Animated.View
+                                    style={{
+                                        transform: [{ rotate: spin }]
+                                    }}>
+                                    <View
+                                        style={styles.circle_out}>
                                         <LinearGradient
-                                            colors={['#343434', '#343434']}
-                                            style={styles.circle_in}
+                                            colors={['#ff0000', '#00ff00', '#0000ff', '#ffff00']}
+                                            style={styles.circle}
                                             start={{ x: 0, y: 0 }}
                                             end={{ x: 1, y: 1 }}
-                                        />
-                                    </LinearGradient>
-                                </View>
+                                        >
+                                            <LinearGradient
+                                                colors={['#343434', '#343434']}
+                                                style={styles.circle_in}
+                                                start={{ x: 0, y: 0 }}
+                                                end={{ x: 1, y: 1 }}
+                                            />
+                                        </LinearGradient>
+                                    </View>
+                                </Animated.View>
                                 <View>
                                     <Text style={{
                                         color: 'white',
@@ -150,51 +205,87 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                                 keyExtractor={(item, index) => index.toString()}
                                 data={messages}
                                 keyboardShouldPersistTaps="handled"
-                                renderItem={({ item }) =>
-                                    <View style={{
-                                        alignItems: item.own === 'me' ? 'flex-end' : 'flex-start',
-                                    }}>
-                                        <View style={item.own === 'me' ? styles.messMe : styles.messAI}>
-                                            <Text style={item.own === 'me' ? styles.textMe : styles.textAI}>
-                                                {item.text}
-                                            </Text>
-                                            {
-                                                item.data && item.own === 'yesil' &&
-                                                <View>
-                                                    <Text style={styles.textAI}>
-                                                        {'\n'}
-                                                        - Tên khách hàng: {infoUser.fullName + '\n \n'}
-                                                        - Email: {infoUser.email + '\n \n'}
-                                                        - Số điện thoại: {infoUser.phoneNumber || 'chưa cập nhật' + '\n \n'}
-                                                    </Text>
-                                                    <Pressable
-                                                        onPress={() => {
-                                                            handleBooking();
-                                                            cancleInput();
-                                                        }}
-                                                        style={{
-                                                            marginTop: 20,
-                                                            backgroundColor: '#1b7f63',
-                                                            padding: 10,
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            borderRadius: 25
-                                                        }}>
-                                                        <Text style={{
-                                                            color: 'white',
-                                                            fontSize: 17
-                                                        }}>Xác nhận</Text>
-                                                    </Pressable>
-                                                </View>
-                                            }
+                                renderItem={({ item }) => {
+                                    return (
+                                        item?.id &&
+                                        <View style={{
+                                            alignItems: item.own === 'me' ? 'flex-end' : 'flex-start',
+                                        }}>
+                                            <View style={item.own === 'me' ? styles.messMe : styles.messAI}>
+                                                <Text style={item.own === 'me' ? styles.textMe : styles.textAI}>
+                                                    {item.text}
+                                                </Text>
+                                                {
+                                                    item.data && item.own === 'yesil' &&
+                                                    <View>
+                                                        <Text style={styles.textAI}>
+                                                            {'\n'}
+                                                            - Tên khách hàng: {infoUser.fullName + '\n \n'}
+                                                            - Email: {infoUser.email + '\n \n'}
+                                                            - Số điện thoại: {infoUser.phoneNumber || 'chưa cập nhật' + '\n \n'}
+                                                        </Text>
+                                                        <Pressable
+                                                            onPress={() => {
+                                                                handleBooking();
+                                                                cancleInput();
+                                                            }}
+                                                            style={{
+                                                                marginTop: 20,
+                                                                backgroundColor: '#1b7f63',
+                                                                padding: 10,
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                borderRadius: 25
+                                                            }}>
+                                                            <Text style={{
+                                                                color: 'white',
+                                                                fontSize: 17
+                                                            }}>Xác nhận</Text>
+                                                        </Pressable>
+                                                        <Pressable
+                                                            onPress={() => {
+                                                                handleCancleBooking();
+                                                                cancleInput();
+                                                            }}
+                                                            style={{
+                                                                marginTop: 20,
+                                                                backgroundColor: 'grey',
+                                                                padding: 10,
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                borderRadius: 25
+                                                            }}>
+                                                            <Text style={{
+                                                                color: 'white',
+                                                                fontSize: 17
+                                                            }}>Hủy</Text>
+                                                        </Pressable>
+                                                    </View>
+                                                }
+                                            </View>
                                         </View>
-                                    </View>
+                                    )
+                                }
                                 }
                                 onContentSizeChange={() => {
                                     // Đảm bảo cuộn đến cuối mỗi khi nội dung thay đổi
                                     flatListRef.current?.scrollToEnd({ animated: true });
                                 }}
                             />
+                            {
+                                loadingMess &&
+                                <View style={{
+                                    marginHorizontal: 10,
+                                    alignItems: 'flex-start',
+                                }}>
+                                    <View style={styles.messAI}>
+                                        <Text style={{
+                                            color: 'white',
+                                            fontSize: 25
+                                        }}>{dots}</Text>
+                                    </View>
+                                </View>
+                            }
                         </View>
                         <KeyboardAvoidingView
                             style={{
@@ -227,10 +318,11 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                                     />
                                     <Pressable
                                         onPress={addMessage}
+                                        disabled={loadingMess}
                                         style={{
                                             position: 'absolute',
                                             right: 0,
-                                            backgroundColor: '#1b7f63',
+                                            backgroundColor: !loadingMess ? '#1b7f63' : 'grey',
                                             height: 50,
                                             width: 50,
                                             justifyContent: 'center',
@@ -273,10 +365,11 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
 
                                     <Pressable
                                         onPress={addMessage}
+                                        disabled={loadingMess}
                                         style={{
                                             position: 'absolute',
                                             right: 0,
-                                            backgroundColor: '#1b7f63',
+                                            backgroundColor: !loadingMess ? '#1b7f63' : 'grey',
                                             height: 50,
                                             width: 50,
                                             justifyContent: 'center',
@@ -291,8 +384,8 @@ export default function ChatYesil({ closeModal }: ChatYesilProps) {
                         </KeyboardAvoidingView>
                     </View>
                 </View >
-            </SafeAreaView>
-        </SafeAreaProvider>
+            </SafeAreaView >
+        </SafeAreaProvider >
 
     )
 }

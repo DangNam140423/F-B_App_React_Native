@@ -3,7 +3,6 @@ import { BlurView } from 'expo-blur';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Entypo, Feather, Fontisto } from '@expo/vector-icons';
 import { StyleSheet, Dimensions, View, Keyboard, TouchableWithoutFeedback, ScrollView, TextInput, FlatList, Text, Animated, Button, Image, Pressable, ImageBackground, Alert, Modal, Platform } from 'react-native';
-import BoxFriend from '../BoxFriend/BoxFriend';
 import * as SecureStore from 'expo-secure-store';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuth, setInfoUser, setRoute, setToken } from '../../../store/slices/appSlice';
@@ -18,7 +17,7 @@ import ImageView from "react-native-image-viewing";
 import ListTicketScreen from '../Ticket/ListTicketScreen';
 import avatarDefault from '../../../store/avatar/avatarUser';
 import saveToken from '../../../store/token/savetoken';
-
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 const { width, height } = Dimensions.get('window');
 
 
@@ -68,7 +67,7 @@ export default function UserScreen({ navigation }: any) {
                 {
                     text: "Logout", // Nút đăng xuất
                     onPress: async () => {
-                        await axios.post(`http://192.168.1.24:3000/api/logout`,
+                        await axios.post(`http://192.168.142.61:3000/api/logout`,
                             {
                                 idUser: infoUser.idUser,
                                 tokenDevice: pushTokenRedux
@@ -127,7 +126,7 @@ export default function UserScreen({ navigation }: any) {
 
     const handleUpdateProfile = async () => {
         if (fullname !== infoUser.fullName || phonenumber !== infoUser.phoneNumber) {
-            await axios.put(`http://192.168.1.24:3000/api/user/update-profile`,
+            await axios.put(`http://192.168.142.61:3000/api/user/update-profile`,
                 {
                     id: infoUser.idUser,
                     fullname: fullname,

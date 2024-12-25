@@ -18,7 +18,7 @@ export const Title = () => {
   const x1 = (width - font.getTextWidth(text)) / 2;
   const x2 = (width - subFont.getTextWidth(subText)) / 2;
   return (
-    <>
+    <View>
       <Text
         font={font}
         x={x1}
@@ -35,6 +35,6 @@ export const Title = () => {
         color="white"
         opacity={0.5}
       />
-    </>
+    </View>
   );
 };

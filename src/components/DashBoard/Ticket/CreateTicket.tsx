@@ -11,7 +11,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
 import { setAuth, setToken } from '../../../store/slices/appSlice';
-import { REACT_APP_BACKEND_URL } from '@env';
+import { REACT_APP_JWT_SECRET, REACT_APP_IP } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -152,7 +152,7 @@ const BookingScreen = ({ navigation }: any) => {
     useEffect(() => {
         setLoadingSchedule(true);
         const getSchedule = async () => {
-            await axios.post(`http://192.168.1.24:3000/api/get-schedule2`,
+            await axios.post(`http://192.168.142.61:3000/api/get-schedule2`,
                 {
                     date: timeStamp
                 },
@@ -185,7 +185,7 @@ const BookingScreen = ({ navigation }: any) => {
 
     const getArrTable = async () => {
         setLoadingTable(true);
-        await axios.post(`http://192.168.1.24:3000/api/get-table-empty`,
+        await axios.post(`http://192.168.142.61:3000/api/get-table-empty`,
             {
                 date: timeStamp,
                 timeType: timeType
@@ -375,7 +375,7 @@ const BookingScreen = ({ navigation }: any) => {
             }
         }));
         if (arrTableChoose.length > 0) {
-            await axios.post(`http://192.168.1.24:3000/api/create-ticket`,
+            await axios.post(`http://192.168.142.61:3000/api/create-ticket`,
                 {
                     timeType: timeType,
                     date: timeStamp,
@@ -534,7 +534,7 @@ const BookingScreen = ({ navigation }: any) => {
                                 ?
                                 arrTable.length > 0 && timeType !== null
                                     ?
-                                    <>
+                                    <View>
                                         <View style={{ width: '100%', padding: 10, marginBottom: 10 }}>
                                             <Text style={{ color: 'white', fontSize: 20, letterSpacing: 1 }}>Select Seats</Text>
                                             <Text style={{ color: 'grey', fontSize: 15 }}>Each table has 2 seats</Text>
@@ -555,13 +555,13 @@ const BookingScreen = ({ navigation }: any) => {
                                                             }]} key={index}>
                                                             {item.isChooose
                                                                 ?
-                                                                <>
+                                                                <View>
                                                                     <Text style={{
                                                                         color: 'white',
                                                                         fontSize: 10
                                                                     }}>{item.tableNumber}</Text>
                                                                     <AntDesign name="check" size={24} color="white" />
-                                                                </>
+                                                                </View>
                                                                 : <Text style={{
                                                                     color: 'white',
                                                                     fontSize: 17
@@ -605,7 +605,7 @@ const BookingScreen = ({ navigation }: any) => {
                                                 </View>
                                             </View>
                                         </View>
-                                    </>
+                                    </View>
                                     :
                                     <View style={{ marginTop: 40 }}>
                                         <Text style={{ fontSize: 17, color: '#c4c1c1' }}>
@@ -613,14 +613,14 @@ const BookingScreen = ({ navigation }: any) => {
                                         </Text>
                                     </View>
                                 :
-                                <>
+                                <View>
                                     <ActivityIndicator size="large" color="white" />
                                     <Text style={{
                                         color: 'white',
                                         fontWeight: '500',
                                         fontSize: 20
                                     }}>Loading..</Text>
-                                </>
+                                </View>
                             }
                         </View>
                     </ScrollView>
@@ -682,23 +682,23 @@ const BookingScreen = ({ navigation }: any) => {
                                 }}
                             >
                                 {loadingBooking ?
-                                    <>
+                                    <View>
                                         <ActivityIndicator size="large" color="white" />
                                         <Text style={{
                                             color: 'white',
                                             fontWeight: '500',
                                             fontSize: 20
                                         }}>Loading..</Text>
-                                    </>
+                                    </View>
                                     :
-                                    <>
+                                    <View>
                                         <Text style={{
                                             color: 'white',
                                             fontWeight: '400',
                                             fontSize: 20
                                         }}>Booking</Text>
                                         <FontAwesome name="ticket" size={30} color="white" />
-                                    </>}
+                                    </View>}
 
                             </LinearGradient>
                         </Pressable>
